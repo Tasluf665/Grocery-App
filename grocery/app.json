@@ -2,6 +2,7 @@
   "expo": {
     "name": "grocery",
     "slug": "grocery",
+    "scheme": "grocery",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -23,6 +24,28 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-font",
+          {
+            "fonts": [
+              "./assets/fonts/Gilroy/Gilroy_ExtraBold.otf",
+              "./assets/fonts/Gilroy/Gilroy_Light.otf",
+              "./assets/fonts/Lato/Lato-Black.ttf",
+              "./assets/fonts/Lato/Lato-BlackItalic.ttf",
+              "./assets/fonts/Lato/Lato-Bold.ttf",
+              "./assets/fonts/Lato/Lato-BoldItalic.ttf",
+              "./assets/fonts/Lato/Lato-Italic.ttf",
+              "./assets/fonts/Lato/Lato-Light.ttf",
+              "./assets/fonts/Lato/Lato-LightItalic.ttf",
+              "./assets/fonts/Lato/Lato-Regular.ttf",
+              "./assets/fonts/Lato/Lato-Thin.ttf",
+              "./assets/fonts/Lato/Lato-ThinItalic.ttf"
+            ]
+          }
+      ]
+    ]
   }
 }
