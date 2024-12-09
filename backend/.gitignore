@@ -1,0 +1,19 @@
+# dependencies
+node_modules/
+package-lock.json
+
+# Native
+*.orig.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+
+
+# macOS
+.DS_Store
+*.pem
+
+# local env files
+.env*.local
