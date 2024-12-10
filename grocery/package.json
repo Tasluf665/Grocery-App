@@ -18,7 +18,8 @@
     "react-native-screens": "~4.1.0",
     "expo-linking": "~7.0.3",
     "expo-constants": "~17.0.3",
-    "expo-font": "~13.0.1"
+    "expo-font": "~13.0.1",
+    "@expo/vector-icons": "^14.0.2"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0"

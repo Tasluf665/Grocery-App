@@ -6,7 +6,7 @@ export default function SignupScreen() {
     return (
         <View style={styles.container}>
             <Text>SignupScreen</Text>
-            <Button title='Signup' onPress={() => router.replace("Main")} />
+            <Button title='Signup' onPress={() => router.replace("ShopScreen")} />
             <Button title='Login' onPress={() => {
                 router.back()
             }} />
