@@ -7,7 +7,7 @@ import {
   TouchableNativeFeedback,
 } from "react-native";
 import { router, useNavigation } from "expo-router";
-// import { auth } from "../../firebase";
+import { auth } from "../../firebase";
 
 import Colors from "../../constent/Colors";
 import CustomeFonts from "../../constent/customeFonts";
@@ -15,14 +15,14 @@ import CustomeFonts from "../../constent/customeFonts";
 export default function WelcomeScreen() {
   const navigation = useNavigation();
 
-  // React.useEffect(() => {
-  //   const unsubscribe = auth.onAuthStateChanged((user) => {
-  //     if (user && user.emailVerified) {
-  //       navigation.replace("Main");
-  //     }
-  //     return () => unsubscribe();
-  //   });
-  // }, []);
+  React.useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      if (user && user.emailVerified) {
+        navigation.replace("(tabs)/ShopScreen");
+      }
+      return () => unsubscribe();
+    });
+  }, []);
 
   return (
     <View style={styles.container}>
