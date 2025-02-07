@@ -1,37 +1,12 @@
 import { Button, StyleSheet, Text, TextInput, View, Alert } from 'react-native'
 import React, { useState } from 'react'
 import { router } from "expo-router";
-import {
-    createUserWithEmailAndPassword,
-    updateProfile,
-    sendEmailVerification,
-    signOut,
-} from "firebase/auth";
-import { auth } from "../../firebase";
+import { handleSignup } from '../../utils/authService';
 
 export default function SignupScreen() {
     const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-
-    const handleSignup = async () => {
-        try {
-            await createUserWithEmailAndPassword(auth, email, password);
-
-            await updateProfile(auth.currentUser, {
-                displayName: username,
-            });
-
-            await sendEmailVerification(auth.currentUser);
-
-            Alert.alert(
-                "An email is send for verification. Verify your email and log in into your account"
-            );
-            await signOut(auth);
-        } catch (error) {
-            Alert.alert(error.message);
-        }
-    };
 
     return (
         <View style={styles.container}>
@@ -60,7 +35,7 @@ export default function SignupScreen() {
                 onChangeText={setPassword}
                 secureTextEntry
             />
-            <Button title='Signup' onPress={handleSignup} />
+            <Button title='Signup' onPress={() => handleSignup(username, email, password)} />
             <Button title='Login' onPress={() => router.back()} />
         </View>
     )
