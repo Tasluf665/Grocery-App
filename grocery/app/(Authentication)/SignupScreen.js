@@ -1,16 +1,36 @@
 import { Button, StyleSheet, Text, TextInput, View, Alert } from 'react-native'
 import React, { useState } from 'react'
 import { router } from "expo-router";
-import { handleSignup } from '../../utils/authService';
+import { useDispatch, useSelector } from 'react-redux';
+import { signupUser } from '../../utils/authSlice'; // ✅ Import Redux action
 
 export default function SignupScreen() {
+    const dispatch = useDispatch();
+    const { loading, error } = useSelector((state) => state.auth); // ✅ Get Redux state
     const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
+    const handleSignupPress = () => {
+        if (!username || !email || !password) {
+            Alert.alert("Error", "All fields are required!");
+            return;
+        }
+
+        dispatch(signupUser({ username, email, password }))
+            .unwrap()
+            .then(() => {
+                Alert.alert("Success", "Account created! Verify your email.");
+                router.back(); // ✅ Redirect to login
+            })
+            .catch((err) => {
+                Alert.alert("Signup Failed", err);
+            });
+    };
+
     return (
         <View style={styles.container}>
-            <Text>SignupScreen</Text>
+            <Text>Signup Screen</Text>
             <Text>Username</Text>
             <TextInput
                 style={styles.input}
@@ -35,8 +55,16 @@ export default function SignupScreen() {
                 onChangeText={setPassword}
                 secureTextEntry
             />
-            <Button title='Signup' onPress={() => handleSignup(username, email, password)} />
-            <Button title='Login' onPress={() => router.back()} />
+
+            {loading ? (
+                <Text>Loading...</Text>
+            ) : (
+                <Button title="Signup" onPress={handleSignupPress} />
+            )}
+
+            <Button title="Login" onPress={() => router.back()} />
+
+            {error && <Text style={styles.errorText}>{error}</Text>}
         </View>
     )
 }

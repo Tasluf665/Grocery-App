@@ -1,12 +1,17 @@
-import { View, Text, Image, StyleSheet, ActivityIndicator } from "react-native";
+import { View, Text, Image, StyleSheet, ActivityIndicator, TouchableOpacity } from "react-native";
 import React, { useEffect, useState } from "react";
-import { useLocalSearchParams } from "expo-router"; // Import for getting query params
+import { useLocalSearchParams } from "expo-router";
 import { fetchProductDetails } from "../../utils/fetchProducts";
+import { AntDesign } from "@expo/vector-icons"; // 🔹 Import favorite icon
+import { useDispatch, useSelector } from "react-redux";
+import { addFavorite, removeFavorite } from "../../utils/favoritesSlice";
 
 export default function ProductDetailsScreen() {
     const { id } = useLocalSearchParams();
     const [product, setProduct] = useState(null);
     const [loading, setLoading] = useState(true);
+    const dispatch = useDispatch();
+    const favorites = useSelector((state) => state.favorites.favorites);
 
     useEffect(() => {
         if (id) {
@@ -25,10 +30,25 @@ export default function ProductDetailsScreen() {
         return <Text style={styles.errorText}>Product not found.</Text>;
     }
 
+    const isFavorite = favorites.some((fav) => fav.id === product.id);
+
+    const toggleFavorite = () => {
+        if (isFavorite) {
+            dispatch(removeFavorite(product.id));
+        } else {
+            dispatch(addFavorite(product.id));
+        }
+    };
+
     return (
         <View style={styles.container}>
             <Image source={{ uri: product.image }} style={styles.productImage} />
-            <Text style={styles.productName}>{product.name}</Text>
+            <View style={styles.headerRow}>
+                <Text style={styles.productName}>{product.name}</Text>
+                <TouchableOpacity onPress={toggleFavorite}>
+                    <AntDesign name={isFavorite ? "heart" : "hearto"} size={24} color={isFavorite ? "red" : "black"} />
+                </TouchableOpacity>
+            </View>
             <Text style={styles.productPrice}>${product.price}</Text>
             <Text style={styles.productDescription}>{product.description}</Text>
         </View>
@@ -46,10 +66,16 @@ const styles = StyleSheet.create({
         height: 250,
         resizeMode: "contain",
     },
+    headerRow: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+        marginTop: 10,
+    },
     productName: {
         fontSize: 24,
         fontWeight: "bold",
-        marginTop: 10,
+        flex: 1, // 🔹 Makes text take up available space
     },
     productPrice: {
         fontSize: 20,

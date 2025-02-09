@@ -1,25 +1,59 @@
-import { View, Text, FlatList, Image, TouchableOpacity, StyleSheet, Button, ScrollView } from "react-native";
-import React, { useEffect, useState } from "react";
-import { router } from "expo-router";
-import { getSpecialSectionProducts } from "../../utils/fetchProducts"; // Import function
+import React, { useEffect, useCallback } from "react";
+import { View, Text, FlatList, Image, TouchableOpacity, StyleSheet, TextInput, ActivityIndicator } from "react-native";
+import { useRouter } from "expo-router";
+import { useDispatch, useSelector } from "react-redux";
+import { getSpecialSections } from "../../utils/specialSectionsSlice"; // Import Redux action
+import { fetchProductsBySearch } from "../../utils/fetchProducts"; // Import search function
+import { debounce } from "lodash";
 
 export default function ShopScreen() {
-    const [exclusiveProducts, setExclusiveProducts] = useState([]);
-    console.log(exclusiveProducts);
-    const [bestSellingProducts, setBestSellingProducts] = useState([]);
+    const dispatch = useDispatch();
+    const router = useRouter();
 
+    // 🔹 Get sections & loading state from Redux store
+    const { sections, loading } = useSelector((state) => state.specialSections);
+
+    // Search state
+    const [searchResults, setSearchResults] = React.useState([]);
+    const [searchQuery, setSearchQuery] = React.useState("");
+
+    // Fetch special sections when component mounts
     useEffect(() => {
-        // Fetch Exclusive Offers
-        getSpecialSectionProducts("exclusive_offer").then(setExclusiveProducts);
+        dispatch(getSpecialSections()); // 🔹 Dispatch Redux action
+    }, [dispatch]);
 
-        // Fetch Best Selling
-        getSpecialSectionProducts("best_selling").then(setBestSellingProducts);
-    }, []);
+    // Debounced Search Function (Only API Call)
+    const debouncedSearch = useCallback(
+        debounce(async (query) => {
+            if (query.length > 0) {
+                const results = await fetchProductsBySearch(query);
+                setSearchResults(results);
+            } else {
+                setSearchResults([]);
+            }
+        }, 500), // 🔹 500ms delay before making API call
+        []
+    );
+
+    // Handle Search Input (Instant UI Update)
+    const handleSearchInput = (query) => {
+        setSearchQuery(query);
+        debouncedSearch(query);
+    };
 
     // Handle Product Click
     const handleProductClick = (productId) => {
         router.push(`/ProductDetailsScreen?id=${productId}`);
     };
+
+    // Handle "See All" Click
+    const handleSeeAllClick = (sectionId) => {
+        router.push(`/ProductCategoryScreen?id=${sectionId}&type=special_section`);
+    };
+
+    if (loading) {
+        return <ActivityIndicator size="large" color="#0000ff" />;
+    }
 
     // Render a single product card
     const renderProductCard = ({ item }) => (
@@ -33,33 +67,49 @@ export default function ShopScreen() {
         </TouchableOpacity>
     );
 
+    // Render a single section
+    const renderSection = ({ item: section }) => (
+        <View key={section.id} style={styles.section}>
+            <View style={styles.sectionHeader}>
+                <Text style={styles.sectionTitle}>{section.name}</Text>
+                <TouchableOpacity onPress={() => handleSeeAllClick(section.id, section.name)}>
+                    <Text style={styles.seeAllText}>See All</Text>
+                </TouchableOpacity>
+            </View>
+            <FlatList
+                data={section.products.slice(0, 6)}
+                renderItem={renderProductCard}
+                keyExtractor={(item) => item.id}
+                horizontal
+                showsHorizontalScrollIndicator={false}
+            />
+        </View>
+    );
+
     return (
-        <ScrollView style={styles.container}>
-            {/* Exclusive Offer Section */}
-            <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Exclusive Offer</Text>
-                <FlatList
-                    data={exclusiveProducts}
-                    renderItem={renderProductCard}
-                    keyExtractor={(item) => item.id}
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
+        <View style={styles.container}>
+            {/* Search Bar */}
+            <View style={styles.searchContainer}>
+                <TextInput
+                    placeholder="Search Store"
+                    style={styles.searchInput}
+                    value={searchQuery}
+                    onChangeText={handleSearchInput}
                 />
             </View>
 
-            {/* Best Selling Section */}
-            <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Best Selling</Text>
-                <FlatList
-                    data={bestSellingProducts}
-                    renderItem={renderProductCard}
-                    keyExtractor={(item) => item.id}
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                />
-            </View>
-        </ScrollView>
-    )
+            {/* Main List (Either Search Results OR Sections) */}
+            <FlatList
+                key={searchResults.length > 0 ? "searchGrid" : "sectionsList"} // 🔹 Force re-render when switching
+                data={searchResults.length > 0 ? searchResults : sections}
+                renderItem={searchResults.length > 0 ? renderProductCard : renderSection}
+                keyExtractor={(item) => item.id}
+                numColumns={searchResults.length > 0 ? 2 : 1} // 🔹 Avoid dynamic changes
+                columnWrapperStyle={searchResults.length > 0 ? styles.row : null}
+                showsVerticalScrollIndicator={false}
+            />
+        </View>
+    );
 }
 
 const styles = StyleSheet.create({
@@ -68,13 +118,33 @@ const styles = StyleSheet.create({
         backgroundColor: "#fff",
         paddingHorizontal: 10,
     },
+    searchContainer: {
+        backgroundColor: "#F5F5F5",
+        borderRadius: 10,
+        paddingHorizontal: 15,
+        paddingVertical: 10,
+        marginBottom: 20,
+    },
+    searchInput: {
+        fontSize: 16,
+    },
     section: {
         marginBottom: 20,
+    },
+    sectionHeader: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+        marginBottom: 10,
     },
     sectionTitle: {
         fontSize: 20,
         fontWeight: "bold",
-        marginBottom: 10,
+    },
+    seeAllText: {
+        fontSize: 14,
+        fontWeight: "bold",
+        color: "green",
     },
     card: {
         width: 140,
@@ -116,4 +186,4 @@ const styles = StyleSheet.create({
         color: "#fff",
         fontWeight: "bold",
     },
-})
+});

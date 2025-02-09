@@ -1,22 +1,23 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { View, Text, FlatList, Image, TouchableOpacity, StyleSheet, ActivityIndicator } from "react-native";
-import { useLocalSearchParams, useRouter } from "expo-router"; // Import useRouter for navigation
-import { fetchProductsByCategory } from "../../utils/fetchProducts"; // Import function to fetch products
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { useDispatch, useSelector } from "react-redux";
+import { getProductsByCategoryOrSection } from "../../utils/productsSlice"; // Redux action
 
 export default function ProductCategoryScreen() {
-    const { id } = useLocalSearchParams(); // Get category ID from URL query params
-    const [products, setProducts] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const router = useRouter(); // Initialize router for navigation
+    const { id, type } = useLocalSearchParams(); // Get category ID and type from URL query params
+    const dispatch = useDispatch();
+    const router = useRouter();
 
+    // 🔹 Get products & loading state from Redux store
+    const { products, loading } = useSelector((state) => state.products);
+
+    // Fetch products when component mounts
     useEffect(() => {
         if (id) {
-            fetchProductsByCategory(id).then((data) => {
-                setProducts(data);
-                setLoading(false);
-            });
+            dispatch(getProductsByCategoryOrSection({ id, type })); // 🔹 Dispatch Redux action
         }
-    }, [id]);
+    }, [id, type, dispatch]);
 
     if (loading) {
         return <ActivityIndicator size="large" color="#0000ff" />;

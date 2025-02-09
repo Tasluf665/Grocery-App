@@ -1,6 +1,7 @@
 import React from "react";
 import { useFonts } from "expo-font";
-import AppContainer from "./AppContainer";
+import { Redirect } from "expo-router";
+
 
 const index = () => {
   const [fontsLoaded] = useFonts({
@@ -22,7 +23,7 @@ const index = () => {
     return null;
   }
 
-  return <AppContainer />;
+  return <Redirect href={"/SplashScreen"} />;
 };
 
 export default index;

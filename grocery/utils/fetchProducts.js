@@ -1,27 +1,45 @@
-import { collection, doc, getDoc, getDocs } from "firebase/firestore";
+import { collection, doc, getDoc, getDocs, query, where, limit } from "firebase/firestore";
 import { db } from "../firebase";
 
-export async function getSpecialSectionProducts(sectionId) {
-    const sectionRef = doc(db, "special_sections", sectionId);
-    const sectionSnap = await getDoc(sectionRef);
+// Fetch all special sections and their products
+export const fetchAllSpecialSections = async () => {
+    try {
+        const sectionsRef = collection(db, "special_sections");
+        const snapshot = await getDocs(sectionsRef);
 
-    if (!sectionSnap.exists()) {
-        console.log("No such section found!");
+        if (snapshot.empty) {
+            console.log("No special sections found!");
+            return [];
+        }
+
+        // Convert all documents into an array
+        const sectionPromises = snapshot.docs.map(async (docSnap) => {
+            const sectionData = docSnap.data();
+            const productRefs = sectionData.products || [];
+
+            // Fetch product details using references
+            const productPromises = productRefs.map(async (productRef) => {
+                if (!productRef) return null; // Handle invalid reference
+                const productSnap = await getDoc(productRef);
+                return productSnap.exists() ? { id: productSnap.id, ...productSnap.data() } : null;
+            });
+
+            const products = await Promise.all(productPromises);
+
+            return {
+                id: docSnap.id,
+                name: sectionData.name || docSnap.id, // Default name if missing
+                products: products.filter((product) => product !== null), // Filter out null values
+            };
+        });
+
+        const sections = await Promise.all(sectionPromises);
+        return sections;
+    } catch (error) {
+        console.error("Error fetching special sections:", error);
         return [];
     }
-
-    // Get product references (Firestore stores them as actual document references)
-    const productRefs = sectionSnap.data().products;
-
-    // Fetch product details using Firestore references
-    const productPromises = productRefs.map(async (productRef) => {
-        const productSnap = await getDoc(productRef); // Get the document using reference
-        return productSnap.exists() ? { id: productSnap.id, ...productSnap.data() } : null;
-    });
-
-    const products = await Promise.all(productPromises);
-    return products.filter((product) => product !== null); // Filter out any null values
-}
+};
 
 // Function to fetch product details by ID
 export const fetchProductDetails = async (productId) => {
@@ -41,19 +59,33 @@ export const fetchProductDetails = async (productId) => {
     }
 };
 
-// Fetch all categories from Firestore
+// 🔹 Fetch all categories from Firestore and resolve product references
 export const fetchCategories = async () => {
     try {
         const categoriesRef = collection(db, "categories");
         const snapshot = await getDocs(categoriesRef);
 
-        // Convert documents into an array
-        const categories = snapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
+        // 🔹 Convert Firestore documents into an array
+        const categories = snapshot.docs.map(docSnap => ({
+            id: docSnap.id,
+            ...docSnap.data()
         }));
 
-        return categories;
+        // 🔹 Resolve product references for each category
+        const categoryPromises = categories.map(async (category) => {
+            const productRefs = category.products || [];
+
+            // 🔹 Convert product references into real product objects
+            const productPromises = productRefs.map(async (productRef) => {
+                if (!productRef || typeof productRef.id !== "string") return null;
+                return await fetchProductDetails(productRef.id); // Fetch product details
+            });
+
+            const products = await Promise.all(productPromises);
+            return { ...category, products: products.filter(p => p !== null) }; // Remove null values
+        });
+
+        return await Promise.all(categoryPromises);
     } catch (error) {
         console.error("Error fetching categories:", error);
         return [];
@@ -61,18 +93,21 @@ export const fetchCategories = async () => {
 };
 
 // Fetch products by category (Uses product references)
-export const fetchProductsByCategory = async (categoryId) => {
+export const fetchProductsByCategoryOrSection = async (id, type) => {
     try {
-        const categoryRef = doc(db, "categories", categoryId);
-        const categorySnap = await getDoc(categoryRef);
+        // Determine Firestore collection based on `type`
+        const collectionName = type === "special_section" ? "special_sections" : "categories";
+        const ref = doc(db, collectionName, id);
+        const snap = await getDoc(ref);
 
-        if (!categorySnap.exists()) {
-            console.log("Category not found!");
+        if (!snap.exists()) {
+            console.log(`${type} not found!`);
             return [];
         }
 
-        const productRefs = categorySnap.data().products; // Get product references
-        // Fetch all product details using references
+        const productRefs = snap.data().products || []; // Get product references
+
+        // Fetch product details using references
         const productPromises = productRefs.map(async (productRef) => {
             const productSnap = await getDoc(productRef);
             return productSnap.exists() ? { id: productSnap.id, ...productSnap.data() } : null;
@@ -81,7 +116,38 @@ export const fetchProductsByCategory = async (categoryId) => {
         const products = await Promise.all(productPromises);
         return products.filter((product) => product !== null); // Remove null values
     } catch (error) {
-        console.error("Error fetching products:", error);
+        console.error(`Error fetching products from ${type}:`, error);
         return [];
     }
 };
+
+// Search products by name (case-insensitive)
+export const fetchProductsBySearch = async (searchQuery) => {
+    try {
+        if (!searchQuery.trim()) return []; // Return empty array if no query
+
+        const productsRef = collection(db, "products");
+        const searchQ = query(
+            productsRef,
+            where("lowercaseName", ">=", searchQuery.toLowerCase()),
+            where("lowercaseName", "<=", searchQuery.toLowerCase() + "\uf8ff"),
+            limit(20) // Limit to 20 results
+        );
+
+        const querySnapshot = await getDocs(searchQ);
+        console.log("Query snapshot:", querySnapshot.docs);
+        const products = querySnapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+        }));
+
+        console.log("Products found:", products);
+
+        return products;
+    } catch (error) {
+        console.error("Error searching products:", error);
+        return [];
+    }
+};
+
+

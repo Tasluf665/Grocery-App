@@ -1,21 +1,47 @@
-import React, { useEffect, useState } from "react";
-import { View, Text, FlatList, Image, TouchableOpacity, StyleSheet, ScrollView, TextInput } from "react-native";
+import React, { useEffect, useState, useCallback } from "react";
+import { View, Text, FlatList, Image, TouchableOpacity, StyleSheet, TextInput, ActivityIndicator } from "react-native";
 import { useRouter } from "expo-router";
-import { fetchCategories } from "../../utils/fetchProducts"; // Import fetch function
-
+import { useDispatch, useSelector } from "react-redux";
+import { getCategories } from "../../utils/categoriesSlice"; // Import Redux action
+import { searchProducts } from "../../utils/searchSlice"; // Import Redux search action
+import { debounce } from "lodash";
 
 export default function ExploreScreen() {
-    const [categories, setCategories] = useState([]);
+    const dispatch = useDispatch();
     const router = useRouter();
 
-    // Fetch categories from Firestore
+    // 🔹 Get categories & loading state from Redux store
+    const { categories, loading } = useSelector((state) => state.categories);
+
+    // 🔹 Get search results from Redux store
+    const { results: searchResults, loading: searchLoading } = useSelector((state) => state.search);
+
+    const [searchQuery, setSearchQuery] = useState("");
+
+    // Fetch categories from Redux store on mount
     useEffect(() => {
-        fetchCategories().then(setCategories);
-    }, []);
+        dispatch(getCategories());
+    }, [dispatch]);
+
+    // Debounced Search Function (Only API Call)
+    const debouncedSearch = useCallback(
+        debounce(async (query) => {
+            if (query.length >= 0) {
+                dispatch(searchProducts(query)); // 🔹 Dispatch Redux search action
+            }
+        }, 500),
+        [dispatch]
+    );
+
+    // Handle Search Input (Instant UI Update)
+    const handleSearchInput = (query) => {
+        setSearchQuery(query); // 🔹 Update UI immediately
+        debouncedSearch(query); // 🔹 Trigger Redux search after debounce
+    };
 
     // Handle Category Click
     const handleCategoryClick = (categoryId) => {
-        router.push(`/ProductCategoryScreen?id=${categoryId}`);
+        router.push(`/ProductCategoryScreen?id=${categoryId}&type=categories`);
     };
 
     // Render category card
@@ -32,12 +58,22 @@ export default function ExploreScreen() {
 
             {/* Search Bar */}
             <View style={styles.searchContainer}>
-                <TextInput placeholder="Search Store" style={styles.searchInput} />
+                <TextInput
+                    placeholder="Search Categories"
+                    style={styles.searchInput}
+                    value={searchQuery}
+                    onChangeText={handleSearchInput} // 🔹 Calls function that updates instantly
+                />
             </View>
 
-            {/* Categories Grid using FlatList (Avoid ScrollView) */}
+            {/* Show Loading Indicator */}
+            {loading && <ActivityIndicator size="large" color="#0000ff" />}
+            {searchLoading && <ActivityIndicator size="small" color="green" />}
+
+            {/* Categories Grid using FlatList */}
             <FlatList
-                data={categories}
+                key={searchResults.length > 0 ? "searchGrid" : "categoriesList"} // 🔹 Force re-render when switching
+                data={searchResults.length > 0 ? searchResults : categories}
                 renderItem={renderCategoryCard}
                 keyExtractor={(item) => item.id}
                 numColumns={2} // Display as a grid
