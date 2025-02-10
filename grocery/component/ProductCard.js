@@ -19,7 +19,7 @@ const ProductCard = ({ product }) => {
             <Text style={styles.productName}>{product.name}</Text>
             <Text style={styles.productPrice}>${product.price}</Text>
             <TouchableOpacity style={styles.addButton} onPress={async () => {
-                await dispatch(addToCart(product.id))
+                await dispatch(addToCart({ productId: product.id }));
                 await dispatch(fetchCart())
             }}>
                 <Text style={styles.addButtonText}>+</Text>

@@ -6,6 +6,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { fetchFavorites } from "../../utils/favoritesSlice";
 import { addAllFavoritesToCart } from "../../utils/cartSlice";
 import { useRouter } from "expo-router";
+import LoadingActivityIndicator from "../../component/LoadingActivityIndicator";
 
 export default function FavouriteScreen() {
     const dispatch = useDispatch();
@@ -26,12 +27,7 @@ export default function FavouriteScreen() {
     };
 
     if (loading) {
-        return (
-            <View style={styles.loaderContainer}>
-                <ActivityIndicator size="large" color="#5DB075" />
-                <Text style={styles.loaderText}>Loading Favourites...</Text>
-            </View>
-        );
+        return <LoadingActivityIndicator />;
     }
 
     if (error) {

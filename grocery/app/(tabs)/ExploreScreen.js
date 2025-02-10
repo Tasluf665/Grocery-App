@@ -1,10 +1,12 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { View, Text, FlatList, Image, TouchableOpacity, StyleSheet, TextInput, ActivityIndicator } from "react-native";
+import { View, Text, FlatList, Image, TouchableOpacity, StyleSheet, TextInput } from "react-native";
 import { useRouter } from "expo-router";
 import { useDispatch, useSelector } from "react-redux";
 import { getCategories } from "../../utils/categoriesSlice"; // Import Redux action
 import { searchProducts } from "../../utils/searchSlice"; // Import Redux search action
 import { debounce } from "lodash";
+import LoadingActivityIndicator from "../../component/LoadingActivityIndicator";
+import SearchProductCard from "../../component/SearchProductCard";
 
 export default function ExploreScreen() {
     const dispatch = useDispatch();
@@ -44,12 +46,21 @@ export default function ExploreScreen() {
         router.push(`/ProductCategoryScreen?id=${categoryId}&type=categories`);
     };
 
+    // Handle Product Click
+    const handleProductClick = (productId) => {
+        router.push(`/ProductDetailsScreen?id=${productId}`);
+    };
+
     // Render category card
     const renderCategoryCard = ({ item }) => (
         <TouchableOpacity onPress={() => handleCategoryClick(item.id)} style={styles.card}>
             <Image source={{ uri: item.image }} style={styles.categoryImage} />
             <Text style={styles.categoryName}>{item.name}</Text>
         </TouchableOpacity>
+    );
+
+    const renderProductCard = ({ item }) => (
+        <SearchProductCard item={item} onPress={handleProductClick} />
     );
 
     return (
@@ -67,14 +78,14 @@ export default function ExploreScreen() {
             </View>
 
             {/* Show Loading Indicator */}
-            {loading && <ActivityIndicator size="large" color="#0000ff" />}
-            {searchLoading && <ActivityIndicator size="small" color="green" />}
+            {loading && <LoadingActivityIndicator />}
+            {searchLoading && <LoadingActivityIndicator />}
 
             {/* Categories Grid using FlatList */}
             <FlatList
                 key={searchResults.length > 0 ? "searchGrid" : "categoriesList"} // 🔹 Force re-render when switching
                 data={searchResults.length > 0 ? searchResults : categories}
-                renderItem={renderCategoryCard}
+                renderItem={searchResults.length > 0 ? renderProductCard : renderCategoryCard}
                 keyExtractor={(item) => item.id}
                 numColumns={2} // Display as a grid
                 columnWrapperStyle={styles.row}
@@ -130,10 +141,29 @@ const styles = StyleSheet.create({
         height: 80,
         resizeMode: "contain",
     },
+    productImage: {
+        width: 80,
+        height: 80,
+        resizeMode: "contain", // Ensures the image fits inside the frame
+        borderRadius: 8, // Adds rounded corners
+        backgroundColor: "#f0f0f0", // Fallback background color while loading
+    },
     categoryName: {
         fontSize: 16,
         fontWeight: "bold",
         textAlign: "center",
+        marginTop: 5,
+    },
+    productName: {
+        fontSize: 16,
+        fontWeight: "bold",
+        textAlign: "center",
+        marginTop: 5,
+    },
+    productPrice: {
+        fontSize: 14,
+        color: "green",
+        fontWeight: "bold",
         marginTop: 5,
     },
 });

@@ -1,10 +1,11 @@
 import React, { useEffect } from "react";
-import { View, Text, FlatList, Image, TouchableOpacity, StyleSheet, ActivityIndicator } from "react-native";
+import { View, Text, FlatList, StyleSheet, ActivityIndicator } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import { useDispatch, useSelector } from "react-redux";
 
 import { getProductsByCategoryOrSection } from "../../utils/productsSlice"; // Redux action
 import ProductCard from "../../component/ProductCard";
+import LoadingActivityIndicator from "../../component/LoadingActivityIndicator";
 
 export default function ProductCategoryScreen() {
     const { id, type } = useLocalSearchParams(); // Get category ID and type from URL query params
@@ -21,7 +22,7 @@ export default function ProductCategoryScreen() {
     }, [id, type, dispatch]);
 
     if (loading) {
-        return <ActivityIndicator size="large" color="#0000ff" />;
+        return <LoadingActivityIndicator />;
     }
 
     return (

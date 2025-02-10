@@ -30,7 +30,7 @@ export const fetchCart = createAsyncThunk("cart/fetch", async () => {
 });
 
 // 🔹 Add a product to the cart (Store as Firestore Reference)
-export const addToCart = createAsyncThunk("cart/add", async (productId) => {
+export const addToCart = createAsyncThunk("cart/add", async ({ productId, quantity = 1 }) => {
     const user = auth.currentUser;
     if (!user) return;
 
@@ -45,19 +45,22 @@ export const addToCart = createAsyncThunk("cart/add", async (productId) => {
 
     let updatedCart;
     if (existingItem) {
-        // If exists, increase quantity
+        // If exists, increase quantity by the desired amount
         updatedCart = cart.map((item) =>
-            item.product.id === productRef.id ? { ...item, quantity: item.quantity + 1 } : item
+            item.product.id === productRef.id
+                ? { ...item, quantity: item.quantity + quantity }
+                : item
         );
     } else {
-        // If not, add new product
-        updatedCart = [...cart, { product: productRef, quantity: 1 }];
+        // If not, add new product with the desired quantity
+        updatedCart = [...cart, { product: productRef, quantity }];
     }
 
     await updateDoc(userRef, { cart: updatedCart });
 
-    return { id: productId, quantity: existingItem ? existingItem.quantity + 1 : 1 };
+    return { id: productId, quantity: existingItem ? existingItem.quantity + quantity : quantity };
 });
+
 
 // 🔹 Decrease a product quantity (Remove if quantity is 1)
 export const decreaseFromCart = createAsyncThunk("cart/decrease", async (productId) => {

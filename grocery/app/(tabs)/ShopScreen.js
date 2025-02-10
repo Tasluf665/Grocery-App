@@ -1,5 +1,5 @@
 import React, { useEffect, useCallback } from "react";
-import { View, Text, FlatList, Image, TouchableOpacity, StyleSheet, TextInput, ActivityIndicator } from "react-native";
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, TextInput } from "react-native";
 import { useRouter } from "expo-router";
 import { useDispatch, useSelector } from "react-redux";
 import { debounce } from "lodash";
@@ -7,6 +7,9 @@ import { debounce } from "lodash";
 import ProductCard from "../../component/ProductCard";
 import { fetchProductsBySearch } from "../../utils/fetchProducts"; // Import search function
 import { getSpecialSections } from "../../utils/specialSectionsSlice"; // Import Redux action
+
+import LoadingActivityIndicator from "../../component/LoadingActivityIndicator";
+import SearchProductCard from "../../component/SearchProductCard";
 
 export default function ShopScreen() {
     const dispatch = useDispatch();
@@ -43,18 +46,18 @@ export default function ShopScreen() {
         debouncedSearch(query);
     };
 
-    // Handle Product Click
-    const handleProductClick = (productId) => {
-        router.push(`/ProductDetailsScreen?id=${productId}`);
-    };
-
     // Handle "See All" Click
     const handleSeeAllClick = (sectionId) => {
         router.push(`/ProductCategoryScreen?id=${sectionId}&type=special_section`);
     };
 
+    // Handle Product Click
+    const handleProductClick = (productId) => {
+        router.push(`/ProductDetailsScreen?id=${productId}`);
+    };
+
     if (loading) {
-        return <ActivityIndicator size="large" color="#0000ff" />;
+        return <LoadingActivityIndicator />;
     }
 
     // Render a single section
@@ -76,6 +79,10 @@ export default function ShopScreen() {
         </View>
     );
 
+    const renderProductCard = ({ item }) => (
+        <SearchProductCard item={item} onPress={handleProductClick} />
+    );
+
     return (
         <View style={styles.container}>
             {/* Search Bar */}
@@ -92,7 +99,7 @@ export default function ShopScreen() {
             <FlatList
                 key={searchResults.length > 0 ? "searchGrid" : "sectionsList"} // 🔹 Force re-render when switching
                 data={searchResults.length > 0 ? searchResults : sections}
-                renderItem={searchResults.length > 0 ? <ProductCard product={item} /> : renderSection}
+                renderItem={searchResults.length > 0 ? renderProductCard : renderSection}
                 keyExtractor={(item) => item.id}
                 numColumns={searchResults.length > 0 ? 2 : 1} // 🔹 Avoid dynamic changes
                 columnWrapperStyle={searchResults.length > 0 ? styles.row : null}

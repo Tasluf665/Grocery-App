@@ -8,6 +8,7 @@ import { useStripe } from "@stripe/stripe-react-native"; // Import Stripe Hook
 import { db, auth } from "../../firebase"; // Import Firebase
 import { doc, updateDoc, arrayUnion } from "firebase/firestore";
 import { stripe_secretKey } from "@env";
+import LoadingActivityIndicator from "../../component/LoadingActivityIndicator";
 
 export default function CartScreen() {
     const dispatch = useDispatch();
@@ -18,7 +19,7 @@ export default function CartScreen() {
         dispatch(fetchCart());
     }, []);
 
-    if (loading) return <ActivityIndicator size="large" color="#0000ff" style={styles.loading} />;
+    if (loading) return <LoadingActivityIndicator />;
 
     const calculateTotal = () => {
         return cart.reduce((total, item) => total + item.price * item.quantity, 0).toFixed(2);
@@ -35,7 +36,7 @@ export default function CartScreen() {
             // 🔹 Step 2: Initialize PaymentSheet
             const { error: initError } = await stripe.initPaymentSheet({
                 paymentIntentClientSecret: paymentIntent.client_secret,
-                merchantDisplayName: "Your Store Name", // ✅ Add a store name
+                merchantDisplayName: "Grocery", // ✅ Add a store name
                 allowsDelayedPaymentMethods: false, // ✅ Ensure only immediate payments
             });
 
