@@ -1,13 +1,14 @@
 import React, { useEffect } from "react";
 import { View, Text, FlatList, Image, TouchableOpacity, StyleSheet, ActivityIndicator } from "react-native";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
 import { useDispatch, useSelector } from "react-redux";
+
 import { getProductsByCategoryOrSection } from "../../utils/productsSlice"; // Redux action
+import ProductCard from "../../component/ProductCard";
 
 export default function ProductCategoryScreen() {
     const { id, type } = useLocalSearchParams(); // Get category ID and type from URL query params
     const dispatch = useDispatch();
-    const router = useRouter();
 
     // 🔹 Get products & loading state from Redux store
     const { products, loading } = useSelector((state) => state.products);
@@ -23,27 +24,13 @@ export default function ProductCategoryScreen() {
         return <ActivityIndicator size="large" color="#0000ff" />;
     }
 
-    // Handle Product Click
-    const handleProductClick = (productId) => {
-        router.push(`/ProductDetailsScreen?id=${productId}`);
-    };
-
     return (
         <View style={styles.container}>
             <Text style={styles.headerTitle}>Products</Text>
 
             <FlatList
                 data={products}
-                renderItem={({ item }) => (
-                    <TouchableOpacity onPress={() => handleProductClick(item.id)} style={styles.card}>
-                        <Image source={{ uri: item.image }} style={styles.productImage} />
-                        <Text style={styles.productName}>{item.name}</Text>
-                        <Text style={styles.productPrice}>${item.price}</Text>
-                        <TouchableOpacity style={styles.addButton}>
-                            <Text style={styles.addButtonText}>+</Text>
-                        </TouchableOpacity>
-                    </TouchableOpacity>
-                )}
+                renderItem={({ item }) => <ProductCard product={item} />} // 🔹 Use reusable component
                 keyExtractor={(item) => item.id}
                 numColumns={2} // Grid layout
                 columnWrapperStyle={styles.row}

@@ -4,6 +4,7 @@ import {
 } from "react-native";
 import { useSelector, useDispatch } from "react-redux";
 import { fetchFavorites } from "../../utils/favoritesSlice";
+import { addAllFavoritesToCart } from "../../utils/cartSlice";
 import { useRouter } from "expo-router";
 
 export default function FavouriteScreen() {
@@ -18,6 +19,10 @@ export default function FavouriteScreen() {
 
     const handleProductClick = (productId) => {
         router.push(`/ProductDetailsScreen?id=${productId}`);
+    };
+
+    const handleAddAllToCart = () => {
+        dispatch(addAllFavoritesToCart());
     };
 
     if (loading) {
@@ -66,7 +71,7 @@ export default function FavouriteScreen() {
 
             {/* Add All to Cart Button */}
             {favorites.length > 0 && (
-                <TouchableOpacity style={styles.addToCartButton}>
+                <TouchableOpacity style={styles.addToCartButton} onPress={handleAddAllToCart}>
                     <Text style={styles.addToCartText}>Add All To Cart</Text>
                 </TouchableOpacity>
             )}

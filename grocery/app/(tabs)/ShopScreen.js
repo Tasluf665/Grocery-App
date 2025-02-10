@@ -2,9 +2,11 @@ import React, { useEffect, useCallback } from "react";
 import { View, Text, FlatList, Image, TouchableOpacity, StyleSheet, TextInput, ActivityIndicator } from "react-native";
 import { useRouter } from "expo-router";
 import { useDispatch, useSelector } from "react-redux";
-import { getSpecialSections } from "../../utils/specialSectionsSlice"; // Import Redux action
-import { fetchProductsBySearch } from "../../utils/fetchProducts"; // Import search function
 import { debounce } from "lodash";
+
+import ProductCard from "../../component/ProductCard";
+import { fetchProductsBySearch } from "../../utils/fetchProducts"; // Import search function
+import { getSpecialSections } from "../../utils/specialSectionsSlice"; // Import Redux action
 
 export default function ShopScreen() {
     const dispatch = useDispatch();
@@ -55,18 +57,6 @@ export default function ShopScreen() {
         return <ActivityIndicator size="large" color="#0000ff" />;
     }
 
-    // Render a single product card
-    const renderProductCard = ({ item }) => (
-        <TouchableOpacity onPress={() => handleProductClick(item.id)} style={styles.card}>
-            <Image source={{ uri: item.image }} style={styles.productImage} />
-            <Text style={styles.productName}>{item.name}</Text>
-            <Text style={styles.productPrice}>${item.price}</Text>
-            <TouchableOpacity style={styles.addButton}>
-                <Text style={styles.addButtonText}>+</Text>
-            </TouchableOpacity>
-        </TouchableOpacity>
-    );
-
     // Render a single section
     const renderSection = ({ item: section }) => (
         <View key={section.id} style={styles.section}>
@@ -78,7 +68,7 @@ export default function ShopScreen() {
             </View>
             <FlatList
                 data={section.products.slice(0, 6)}
-                renderItem={renderProductCard}
+                renderItem={({ item }) => <ProductCard product={item} />} // 🔹 Use reusable component
                 keyExtractor={(item) => item.id}
                 horizontal
                 showsHorizontalScrollIndicator={false}
@@ -102,7 +92,7 @@ export default function ShopScreen() {
             <FlatList
                 key={searchResults.length > 0 ? "searchGrid" : "sectionsList"} // 🔹 Force re-render when switching
                 data={searchResults.length > 0 ? searchResults : sections}
-                renderItem={searchResults.length > 0 ? renderProductCard : renderSection}
+                renderItem={searchResults.length > 0 ? <ProductCard product={item} /> : renderSection}
                 keyExtractor={(item) => item.id}
                 numColumns={searchResults.length > 0 ? 2 : 1} // 🔹 Avoid dynamic changes
                 columnWrapperStyle={searchResults.length > 0 ? styles.row : null}
