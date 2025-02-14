@@ -1,13 +1,17 @@
-import React from "react";
-import { Text, Image, TouchableOpacity, StyleSheet } from "react-native";
+import React, { useState } from "react";
+import { Text, Image, TouchableOpacity, StyleSheet, View } from "react-native";
 import { useRouter } from "expo-router";
 import { useDispatch } from "react-redux";
-
 import { addToCart, fetchCart } from "../utils/cartSlice";
+import { AntDesign } from "@expo/vector-icons";
+import Colors from "../constent/Colors";
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
+
 
 const ProductCard = ({ product }) => {
     const dispatch = useDispatch();
     const router = useRouter();
+    const [nameLines, setNameLines] = useState(1); // Track number of lines in product name
 
     const handleProductClick = () => {
         router.push(`/ProductDetailsScreen?id=${product.id}`);
@@ -15,59 +19,98 @@ const ProductCard = ({ product }) => {
 
     return (
         <TouchableOpacity onPress={handleProductClick} style={styles.card}>
-            <Image source={{ uri: product.image }} style={styles.productImage} />
-            <Text style={styles.productName}>{product.name}</Text>
-            <Text style={styles.productPrice}>${product.price}</Text>
-            <TouchableOpacity style={styles.addButton} onPress={async () => {
-                await dispatch(addToCart({ productId: product.id }));
-                await dispatch(fetchCart())
-            }}>
-                <Text style={styles.addButtonText}>+</Text>
-            </TouchableOpacity>
+            <View style={styles.imageContainer}>
+                <Image source={{ uri: product.image }} style={styles.productImage} />
+            </View>
+
+            <View style={styles.textContainer}>
+                <Text
+                    style={styles.productName}
+                    numberOfLines={2}
+                    onTextLayout={(e) => setNameLines(e.nativeEvent.lines.length)}
+                >
+                    {product.name}
+                </Text>
+                <Text
+                    style={[
+                        styles.productDescription,
+                        { marginTop: nameLines === 1 ? 15 : 5 } // Adjust spacing based on lines
+                    ]}
+                    numberOfLines={1}
+                >
+                    {product.priceDescription}
+                </Text>
+            </View>
+
+            <View style={styles.priceContainer}>
+                <Text style={styles.productPrice}>${product.price}</Text>
+                <TouchableOpacity
+                    style={styles.addButton}
+                    onPress={async () => {
+                        await dispatch(addToCart({ productId: product.id }));
+                        await dispatch(fetchCart());
+                    }}
+                >
+                    <AntDesign name="plus" size={20} color="white" />
+                </TouchableOpacity>
+            </View>
         </TouchableOpacity>
     );
 };
 
 const styles = StyleSheet.create({
     card: {
-        width: 140,
+        width: wp("42%"),
         backgroundColor: "#fff",
-        borderRadius: 10,
-        padding: 10,
-        marginRight: 10,
+        borderRadius: 20,
+        borderWidth: 1,
+        borderColor: Colors.inputBorderColor,
+        padding: 15,
+        marginRight: 15,
+        marginBottom: 15,
+        justifyContent: "space-between",
+    },
+    imageContainer: {
         alignItems: "center",
-        shadowColor: "#000",
-        shadowOpacity: 0.1,
-        shadowRadius: 5,
-        elevation: 3,
+        marginBottom: 10,
+    },
+    textContainer: {
+        flex: 1,
+        marginBottom: 12,
     },
     productImage: {
-        width: 80,
-        height: 80,
+        width: 100,
+        height: 100,
         resizeMode: "contain",
     },
     productName: {
         fontSize: 14,
         fontWeight: "bold",
-        textAlign: "center",
+        textAlign: "left",
+        lineHeight: 20,
+    },
+    productDescription: {
+        fontSize: 12,
+        color: "#666",
+        textAlign: "left",
+    },
+    priceContainer: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
     },
     productPrice: {
         fontSize: 16,
         fontWeight: "bold",
-        color: "#333",
-        marginTop: 5,
+        flex: 1,
     },
     addButton: {
-        marginTop: 5,
-        backgroundColor: "green",
-        borderRadius: 50,
-        paddingVertical: 5,
-        paddingHorizontal: 10,
-    },
-    addButtonText: {
-        fontSize: 18,
-        color: "#fff",
-        fontWeight: "bold",
+        backgroundColor: Colors.Primary,
+        borderRadius: 17,
+        width: 34,
+        height: 34,
+        justifyContent: "center",
+        alignItems: "center",
     },
 });
 

@@ -1,6 +1,9 @@
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, View, Image } from "react-native";
 import React, { useEffect } from "react";
 import { useNavigation } from "expo-router";
+
+import Colors from "../../constent/Colors";
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
 
 const SplashScreen = () => {
   const navigation = useNavigation();
@@ -15,7 +18,7 @@ const SplashScreen = () => {
 
   return (
     <View style={styles.container}>
-      <Text>SplashScreen</Text>
+      <Image source={require("../../assets/StartupImages/logo.png")} style={styles.logo} />
     </View>
   );
 };
@@ -25,7 +28,13 @@ export default SplashScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: Colors.Primary,
     alignItems: "center",
     justifyContent: "center",
+  },
+  logo: {
+    width: wp("60%"),
+    height: hp("20%"),
+    resizeMode: "contain"
   },
 });

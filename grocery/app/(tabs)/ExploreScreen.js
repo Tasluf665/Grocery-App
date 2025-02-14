@@ -6,7 +6,13 @@ import { getCategories } from "../../utils/categoriesSlice"; // Import Redux act
 import { searchProducts } from "../../utils/searchSlice"; // Import Redux search action
 import { debounce } from "lodash";
 import LoadingActivityIndicator from "../../component/LoadingActivityIndicator";
-import SearchProductCard from "../../component/SearchProductCard";
+import ExplorePageColor from "../../constent/ExplorePageColor";
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
+import customeFonts from "../../constent/customeFonts";
+
+import SearchBar from "../../component/SearchBar";
+import Colors from "../../constent/Colors";
+import ProductCard from "../../component/ProductCard";
 
 export default function ExploreScreen() {
     const dispatch = useDispatch();
@@ -42,56 +48,62 @@ export default function ExploreScreen() {
     };
 
     // Handle Category Click
-    const handleCategoryClick = (categoryId) => {
-        router.push(`/ProductCategoryScreen?id=${categoryId}&type=categories`);
+    const handleCategoryClick = (item) => {
+        router.push(`/ProductCategoryScreen?id=${item.id}&type=categories&title=${item.name}`);
     };
 
-    // Handle Product Click
-    const handleProductClick = (productId) => {
-        router.push(`/ProductDetailsScreen?id=${productId}`);
-    };
 
-    // Render category card
-    const renderCategoryCard = ({ item }) => (
-        <TouchableOpacity onPress={() => handleCategoryClick(item.id)} style={styles.card}>
-            <Image source={{ uri: item.image }} style={styles.categoryImage} />
-            <Text style={styles.categoryName}>{item.name}</Text>
-        </TouchableOpacity>
-    );
+    const renderCategoryCard = ({ item, index }) => {
+        // Get colors based on index (cycle through the array)
+        const colorIndex = index % ExplorePageColor.length;
+        const { Primary, Border } = ExplorePageColor[colorIndex];
+
+        return (
+            <TouchableOpacity
+                onPress={() => handleCategoryClick(item)}
+                style={[styles.card, { backgroundColor: Primary, borderColor: Border }]}
+            >
+                <View style={[styles.imageContainer]}>
+                    <Image source={{ uri: item.image }} style={styles.categoryImage} />
+                </View>
+                <Text style={styles.categoryName}>{item.name}</Text>
+            </TouchableOpacity>
+        );
+    };
 
     const renderProductCard = ({ item }) => (
-        <SearchProductCard item={item} onPress={handleProductClick} />
+        <ProductCard product={item} />
     );
+
+    if (loading) {
+        return <LoadingActivityIndicator />;
+    }
 
     return (
         <View style={styles.container}>
             <Text style={styles.headerTitle}>Find Products</Text>
 
-            {/* Search Bar */}
-            <View style={styles.searchContainer}>
-                <TextInput
-                    placeholder="Search Categories"
-                    style={styles.searchInput}
-                    value={searchQuery}
-                    onChangeText={handleSearchInput} // 🔹 Calls function that updates instantly
-                />
-            </View>
+            <SearchBar
+                placeholder="Search Store"
+                value={searchQuery}
+                onChangeText={handleSearchInput}
+            />
 
             {/* Show Loading Indicator */}
-            {loading && <LoadingActivityIndicator />}
-            {searchLoading && <LoadingActivityIndicator />}
+            {searchLoading ? <LoadingActivityIndicator /> :
+                <FlatList
+                    key={searchResults.length > 0 ? "searchGrid" : "categoriesList"} // 🔹 Force re-render when switching
+                    data={searchResults.length > 0 ? searchResults : categories}
+                    renderItem={searchResults.length > 0 ? renderProductCard : renderCategoryCard}
+                    keyExtractor={(item) => item.id}
+                    numColumns={2} // Display as a grid
+                    columnWrapperStyle={styles.row}
+                    contentContainerStyle={styles.flatListContainer}
+                    showsVerticalScrollIndicator={false}
+                />}
 
             {/* Categories Grid using FlatList */}
-            <FlatList
-                key={searchResults.length > 0 ? "searchGrid" : "categoriesList"} // 🔹 Force re-render when switching
-                data={searchResults.length > 0 ? searchResults : categories}
-                renderItem={searchResults.length > 0 ? renderProductCard : renderCategoryCard}
-                keyExtractor={(item) => item.id}
-                numColumns={2} // Display as a grid
-                columnWrapperStyle={styles.row}
-                contentContainerStyle={styles.flatListContainer}
-                showsVerticalScrollIndicator={false}
-            />
+
         </View>
     );
 }
@@ -99,71 +111,66 @@ export default function ExploreScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "#fff",
+        backgroundColor: Colors.Secondary,
         padding: 20,
     },
     flatListContainer: {
         paddingBottom: 20, // Prevents last item from being cut off
     },
     headerTitle: {
-        fontSize: 24,
-        fontWeight: "bold",
+        fontSize: 22,
         textAlign: "center",
-        marginBottom: 15,
+        marginBottom: hp("3%"),
+        fontFamily: customeFonts.Lato_Bold,
     },
+
     searchContainer: {
-        backgroundColor: "#F5F5F5",
-        borderRadius: 10,
-        paddingHorizontal: 15,
+        flexDirection: "row",
+        alignItems: "center",
+        backgroundColor: "#F2F3F2",
+        borderRadius: 18,
+        paddingHorizontal: 18,
         paddingVertical: 10,
         marginBottom: 20,
     },
+    searchIcon: {
+        marginRight: 10,
+    },
     searchInput: {
-        fontSize: 16,
+        flex: 1,
+        fontSize: 14,
+        fontFamily: customeFonts.Gilroy_Medium,
+        color: "#181725",
     },
     row: {
         justifyContent: "space-between",
     },
+
     card: {
-        width: "48%",
-        backgroundColor: "#fff",
-        borderRadius: 10,
+        width: wp("43%"), // Adjust width based on screen size
+        borderRadius: 15,
         padding: 15,
         marginBottom: 15,
         alignItems: "center",
-        shadowColor: "#000",
-        shadowOpacity: 0.1,
-        shadowRadius: 5,
-        elevation: 3,
+        borderWidth: 1, // Add border
     },
     categoryImage: {
-        width: 80,
-        height: 80,
+        width: wp("28%"), // Adjust width based on screen size
+        height: wp("28%"),
         resizeMode: "contain",
-    },
-    productImage: {
-        width: 80,
-        height: 80,
-        resizeMode: "contain", // Ensures the image fits inside the frame
-        borderRadius: 8, // Adds rounded corners
-        backgroundColor: "#f0f0f0", // Fallback background color while loading
     },
     categoryName: {
         fontSize: 16,
-        fontWeight: "bold",
+        fontFamily: customeFonts.Lato_Bold,
         textAlign: "center",
-        marginTop: 5,
+        paddingHorizontal: 5
+    },
+    imageContainer: {
+        marginBottom: hp("1.5%"),
     },
     productName: {
         fontSize: 16,
         fontWeight: "bold",
         textAlign: "center",
-        marginTop: 5,
-    },
-    productPrice: {
-        fontSize: 14,
-        color: "green",
-        fontWeight: "bold",
-        marginTop: 5,
     },
 });

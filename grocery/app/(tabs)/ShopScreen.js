@@ -1,15 +1,20 @@
-import React, { useEffect, useCallback } from "react";
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, TextInput } from "react-native";
+import React, { useEffect, useCallback, useState, useRef } from "react";
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, Image } from "react-native";
 import { useRouter } from "expo-router";
 import { useDispatch, useSelector } from "react-redux";
 import { debounce } from "lodash";
 
 import ProductCard from "../../component/ProductCard";
-import { fetchProductsBySearch } from "../../utils/fetchProducts"; // Import search function
-import { getSpecialSections } from "../../utils/specialSectionsSlice"; // Import Redux action
+import { fetchProductsBySearch } from "../../utils/fetchProducts";
+import { getSpecialSections } from "../../utils/specialSectionsSlice";
+import { fetchBannerImages } from "../../utils/fetchBannerImages";
 
 import LoadingActivityIndicator from "../../component/LoadingActivityIndicator";
-import SearchProductCard from "../../component/SearchProductCard";
+import SearchBar from "../../component/SearchBar";
+import Colors from "../../constent/Colors";
+import customeFonts from "../../constent/customeFonts";
+
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
 
 export default function ShopScreen() {
     const dispatch = useDispatch();
@@ -19,13 +24,44 @@ export default function ShopScreen() {
     const { sections, loading } = useSelector((state) => state.specialSections);
 
     // Search state
-    const [searchResults, setSearchResults] = React.useState([]);
-    const [searchQuery, setSearchQuery] = React.useState("");
+    const [searchResults, setSearchResults] = useState([]);
+    const [searchQuery, setSearchQuery] = useState("");
+
+    // Banner state
+    const [bannerImages, setBannerImages] = useState([]);
+    const [currentIndex, setCurrentIndex] = useState(0);
+    const flatListRef = useRef(null);
 
     // Fetch special sections when component mounts
     useEffect(() => {
-        dispatch(getSpecialSections()); // 🔹 Dispatch Redux action
+        dispatch(getSpecialSections());
     }, [dispatch]);
+
+    // Fetch banner images from Firestore
+    useEffect(() => {
+        const loadBannerImages = async () => {
+            const images = await fetchBannerImages();
+            setBannerImages(images);
+        };
+        loadBannerImages();
+    }, []);
+
+    // Auto-scroll banner
+    useEffect(() => {
+        if (bannerImages.length > 1) {
+            const interval = setInterval(() => {
+                setCurrentIndex((prevIndex) =>
+                    prevIndex === bannerImages.length - 1 ? 0 : prevIndex + 1
+                );
+                flatListRef.current?.scrollToIndex({
+                    index: currentIndex,
+                    animated: true,
+                });
+            }, 7000); // Change image every 7 seconds
+
+            return () => clearInterval(interval);
+        }
+    }, [bannerImages.length, currentIndex]);
 
     // Debounced Search Function (Only API Call)
     const debouncedSearch = useCallback(
@@ -36,7 +72,7 @@ export default function ShopScreen() {
             } else {
                 setSearchResults([]);
             }
-        }, 500), // 🔹 500ms delay before making API call
+        }, 500),
         []
     );
 
@@ -47,31 +83,31 @@ export default function ShopScreen() {
     };
 
     // Handle "See All" Click
-    const handleSeeAllClick = (sectionId) => {
-        router.push(`/ProductCategoryScreen?id=${sectionId}&type=special_section`);
-    };
-
-    // Handle Product Click
-    const handleProductClick = (productId) => {
-        router.push(`/ProductDetailsScreen?id=${productId}`);
+    const handleSeeAllClick = (section) => {
+        router.push(`/ProductCategoryScreen?id=${section.id}&type=special_section&title=${section.name}`);
     };
 
     if (loading) {
         return <LoadingActivityIndicator />;
     }
 
+    // Render a single banner image
+    const renderBannerItem = ({ item }) => (
+        <Image source={{ uri: item.image }} style={styles.bannerImage} />
+    );
+
     // Render a single section
     const renderSection = ({ item: section }) => (
         <View key={section.id} style={styles.section}>
             <View style={styles.sectionHeader}>
                 <Text style={styles.sectionTitle}>{section.name}</Text>
-                <TouchableOpacity onPress={() => handleSeeAllClick(section.id, section.name)}>
+                <TouchableOpacity onPress={() => handleSeeAllClick(section)}>
                     <Text style={styles.seeAllText}>See All</Text>
                 </TouchableOpacity>
             </View>
             <FlatList
                 data={section.products.slice(0, 6)}
-                renderItem={({ item }) => <ProductCard product={item} />} // 🔹 Use reusable component
+                renderItem={({ item }) => <ProductCard product={item} />}
                 keyExtractor={(item) => item.id}
                 horizontal
                 showsHorizontalScrollIndicator={false}
@@ -79,30 +115,73 @@ export default function ShopScreen() {
         </View>
     );
 
-    const renderProductCard = ({ item }) => (
-        <SearchProductCard item={item} onPress={handleProductClick} />
-    );
+    // Main list data
+    const listData = [
+        { type: "logo" },
+        { type: "searchBar" },
+        ...(searchResults.length === 0 ? [{ type: "banner", data: bannerImages }] : []), // Conditionally include banner
+        ...(searchResults.length > 0
+            ? [{ type: "searchResults", data: searchResults }]
+            : sections.map((section) => ({ type: "section", data: section })))
+    ];
+
+    // Render the main list
+    const renderItem = ({ item }) => {
+        switch (item.type) {
+            case "logo":
+                return (
+                    <Image
+                        source={require("../../assets/StartupImages/logo-green.png")}
+                        style={styles.logo}
+                    />
+                );
+            case "searchBar":
+                return (
+                    <SearchBar
+                        placeholder="Search Store"
+                        value={searchQuery}
+                        onChangeText={handleSearchInput}
+                    />
+                );
+            case "banner":
+                return (
+                    <FlatList
+                        ref={flatListRef}
+                        data={item.data}
+                        renderItem={renderBannerItem}
+                        keyExtractor={(item) => item.id}
+                        horizontal
+                        pagingEnabled
+                        showsHorizontalScrollIndicator={false}
+                        onScrollToIndexFailed={() => { }}
+                        style={styles.bannerContainer}
+                    />
+                );
+            case "section":
+                return renderSection({ item: item.data });
+            case "searchResults":
+                return (
+                    <FlatList
+                        data={item.data}
+                        renderItem={({ item }) => <ProductCard product={item} />}
+                        keyExtractor={(item) => item.id}
+                        numColumns={2}
+                        columnWrapperStyle={styles.row}
+                        scrollEnabled={false}
+                        showsVerticalScrollIndicator={false}
+                    />
+                );
+            default:
+                return null;
+        }
+    };
 
     return (
         <View style={styles.container}>
-            {/* Search Bar */}
-            <View style={styles.searchContainer}>
-                <TextInput
-                    placeholder="Search Store"
-                    style={styles.searchInput}
-                    value={searchQuery}
-                    onChangeText={handleSearchInput}
-                />
-            </View>
-
-            {/* Main List (Either Search Results OR Sections) */}
             <FlatList
-                key={searchResults.length > 0 ? "searchGrid" : "sectionsList"} // 🔹 Force re-render when switching
-                data={searchResults.length > 0 ? searchResults : sections}
-                renderItem={searchResults.length > 0 ? renderProductCard : renderSection}
-                keyExtractor={(item) => item.id}
-                numColumns={searchResults.length > 0 ? 2 : 1} // 🔹 Avoid dynamic changes
-                columnWrapperStyle={searchResults.length > 0 ? styles.row : null}
+                data={listData}
+                renderItem={renderItem}
+                keyExtractor={(item, index) => `${item.type}-${index}`}
                 showsVerticalScrollIndicator={false}
             />
         </View>
@@ -112,18 +191,28 @@ export default function ShopScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "#fff",
-        paddingHorizontal: 10,
+        backgroundColor: Colors.Secondary,
+        padding: 20,
+        paddingTop: 0,
     },
-    searchContainer: {
-        backgroundColor: "#F5F5F5",
-        borderRadius: 10,
-        paddingHorizontal: 15,
-        paddingVertical: 10,
+    logo: {
+        width: wp(35),
+        height: hp(5),
+        resizeMode: "contain",
+        alignSelf: "center",
+        marginBottom: 15,
+        marginTop: 15,
+    },
+    bannerContainer: {
         marginBottom: 20,
     },
-    searchInput: {
-        fontSize: 16,
+    bannerImage: {
+        width: wp(88),
+        height: hp(15),
+        borderRadius: 15,
+        marginRight: 10,
+        borderWidth: 1,
+        borderColor: Colors.BorderGray,
     },
     section: {
         marginBottom: 20,
@@ -135,52 +224,15 @@ const styles = StyleSheet.create({
         marginBottom: 10,
     },
     sectionTitle: {
-        fontSize: 20,
-        fontWeight: "bold",
+        fontSize: 18,
+        fontFamily: customeFonts.Lato_Bold,
     },
     seeAllText: {
         fontSize: 14,
-        fontWeight: "bold",
-        color: "green",
+        color: Colors.Primary,
+        fontFamily: customeFonts.Lato_Bold,
     },
-    card: {
-        width: 140,
-        backgroundColor: "#fff",
-        borderRadius: 10,
-        padding: 10,
-        marginRight: 10,
-        alignItems: "center",
-        shadowColor: "#000",
-        shadowOpacity: 0.1,
-        shadowRadius: 5,
-        elevation: 3,
-    },
-    productImage: {
-        width: 80,
-        height: 80,
-        resizeMode: "contain",
-    },
-    productName: {
-        fontSize: 14,
-        fontWeight: "bold",
-        textAlign: "center",
-    },
-    productPrice: {
-        fontSize: 16,
-        fontWeight: "bold",
-        color: "#333",
-        marginTop: 5,
-    },
-    addButton: {
-        marginTop: 5,
-        backgroundColor: "green",
-        borderRadius: 50,
-        paddingVertical: 5,
-        paddingHorizontal: 10,
-    },
-    addButtonText: {
-        fontSize: 18,
-        color: "#fff",
-        fontWeight: "bold",
+    row: {
+        justifyContent: "space-between",
     },
 });

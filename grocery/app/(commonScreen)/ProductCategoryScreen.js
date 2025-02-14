@@ -1,23 +1,24 @@
 import React, { useEffect } from "react";
-import { View, Text, FlatList, StyleSheet, ActivityIndicator } from "react-native";
-import { useLocalSearchParams } from "expo-router";
+import { View, Text, FlatList, StyleSheet, TouchableOpacity } from "react-native";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { useDispatch, useSelector } from "react-redux";
+import { AntDesign } from "@expo/vector-icons"; // For back button icon
 
-import { getProductsByCategoryOrSection } from "../../utils/productsSlice"; // Redux action
+import { getProductsByCategoryOrSection } from "../../utils/productsSlice";
 import ProductCard from "../../component/ProductCard";
 import LoadingActivityIndicator from "../../component/LoadingActivityIndicator";
+import Colors from "../../constent/Colors";
 
 export default function ProductCategoryScreen() {
-    const { id, type } = useLocalSearchParams(); // Get category ID and type from URL query params
+    const { id, type, title } = useLocalSearchParams();
     const dispatch = useDispatch();
+    const router = useRouter();
 
-    // 🔹 Get products & loading state from Redux store
     const { products, loading } = useSelector((state) => state.products);
 
-    // Fetch products when component mounts
     useEffect(() => {
         if (id) {
-            dispatch(getProductsByCategoryOrSection({ id, type })); // 🔹 Dispatch Redux action
+            dispatch(getProductsByCategoryOrSection({ id, type }));
         }
     }, [id, type, dispatch]);
 
@@ -27,14 +28,23 @@ export default function ProductCategoryScreen() {
 
     return (
         <View style={styles.container}>
-            <Text style={styles.headerTitle}>Products</Text>
+            {/* Header with Back Button and Title */}
+            <View style={styles.header}>
+                <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+                    <AntDesign name="arrowleft" size={24} color="black" />
+                </TouchableOpacity>
+                <Text style={styles.headerTitle}>{title}</Text>
+                <View style={{ width: 24 }} ></View>
+            </View>
 
+            {/* Product List */}
             <FlatList
                 data={products}
-                renderItem={({ item }) => <ProductCard product={item} />} // 🔹 Use reusable component
+                renderItem={({ item }) => <ProductCard product={item} />}
                 keyExtractor={(item) => item.id}
-                numColumns={2} // Grid layout
+                numColumns={2}
                 columnWrapperStyle={styles.row}
+                contentContainerStyle={styles.listContent}
             />
         </View>
     );
@@ -43,57 +53,33 @@ export default function ProductCategoryScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "#fff",
-        padding: 20,
+        backgroundColor: Colors.Secondary,
+    },
+    header: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+        paddingHorizontal: 20,
+        paddingVertical: 15,
+        borderBottomWidth: 1,
+        borderBottomColor: Colors.inputBorderColor,
+    },
+    backButton: {
+        padding: 5,
     },
     headerTitle: {
-        fontSize: 24,
+        fontSize: 18,
         fontWeight: "bold",
         textAlign: "center",
-        marginBottom: 15,
     },
     row: {
         justifyContent: "space-between",
+        paddingHorizontal: 15,
     },
-    card: {
-        width: "48%",
-        backgroundColor: "#fff",
-        borderRadius: 10,
-        padding: 15,
-        marginBottom: 15,
-        alignItems: "center",
-        shadowColor: "#000",
-        shadowOpacity: 0.1,
-        shadowRadius: 5,
-        elevation: 3,
-    },
-    productImage: {
-        width: 80,
-        height: 80,
-        resizeMode: "contain",
-    },
-    productName: {
-        fontSize: 16,
-        fontWeight: "bold",
-        textAlign: "center",
-        marginTop: 5,
-    },
-    productPrice: {
-        fontSize: 14,
-        fontWeight: "bold",
-        color: "#333",
-        marginTop: 5,
-    },
-    addButton: {
-        marginTop: 5,
-        backgroundColor: "green",
-        borderRadius: 50,
-        paddingVertical: 5,
+    listContent: {
+        paddingTop: 15,
+        paddingBottom: 20,
         paddingHorizontal: 10,
-    },
-    addButtonText: {
-        fontSize: 18,
-        color: "#fff",
-        fontWeight: "bold",
+
     },
 });
