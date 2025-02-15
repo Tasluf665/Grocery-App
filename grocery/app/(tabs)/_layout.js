@@ -1,12 +1,17 @@
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { Tabs } from 'expo-router';
+import Colors from "../../constent/Colors";
 
 export default () => {
     return (
-        <Tabs screenOptions={{ tabBarActiveTintColor: 'blue' }}>
+        <Tabs screenOptions={{
+            tabBarActiveTintColor: Colors.Primary,
+            tabBarInactiveTintColor: Colors.DarkGray,
+        }}>
             <Tabs.Screen
                 name="ShopScreen"
                 options={{
+                    title: "Shop",
                     headerShown: false,
                     tabBarIcon: ({ color }) => <FontAwesome size={28} name="home" color={color} />,
                 }}
@@ -14,6 +19,7 @@ export default () => {
             <Tabs.Screen
                 name="ExploreScreen"
                 options={{
+                    title: "Explore",
                     headerShown: false,
                     tabBarIcon: ({ color }) => <FontAwesome size={28} name="search" color={color} />,
                 }}
@@ -21,6 +27,7 @@ export default () => {
             <Tabs.Screen
                 name="CartScreen"
                 options={{
+                    title: "Cart",
                     headerShown: false,
                     tabBarIcon: ({ color }) => <FontAwesome size={28} name="shopping-cart" color={color} />,
                 }}
@@ -28,6 +35,7 @@ export default () => {
             <Tabs.Screen
                 name="FavouriteScreen"
                 options={{
+                    title: "Favorites",
                     headerShown: false,
                     tabBarIcon: ({ color }) => <FontAwesome size={28} name="star" color={color} />,
                 }}
@@ -35,6 +43,7 @@ export default () => {
             <Tabs.Screen
                 name="AccountScreen"
                 options={{
+                    title: "Account",
                     headerShown: false,
                     tabBarIcon: ({ color }) => <FontAwesome size={28} name="cog" color={color} />,
                 }}

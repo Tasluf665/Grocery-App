@@ -13,6 +13,8 @@ import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-nat
 import Colors from "../../constent/Colors";
 import customeFonts from "../../constent/customeFonts";
 
+import FloatingCustomButton from "../../component/FloatingCustomButton";
+
 export default function CartScreen() {
     const dispatch = useDispatch();
     const { cart, loading } = useSelector((state) => state.cart);
@@ -153,12 +155,11 @@ export default function CartScreen() {
                 showsVerticalScrollIndicator={false}
             />
 
-            {/* Checkout Button */}
-            <View style={styles.buttonContainer}>
-                <TouchableOpacity style={styles.button} onPress={handleCheckout}>
-                    <Text style={styles.buttonText}>{`Go to Checkout $${calculateTotal()}`}</Text>
-                </TouchableOpacity>
-            </View>
+            <FloatingCustomButton
+                title={`Go to Checkout $${calculateTotal()}`}
+                onPress={handleCheckout}
+                disabled={loading}
+            />
 
         </View>
     );
@@ -186,6 +187,7 @@ const styles = StyleSheet.create({
     },
     flatListContainer: {
         paddingHorizontal: wp("4%"),
+        paddingBottom: hp("8%"),
     },
 
     cartItem: {

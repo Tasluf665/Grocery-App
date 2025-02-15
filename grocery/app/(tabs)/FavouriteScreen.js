@@ -1,17 +1,22 @@
 import React, { useEffect } from "react";
 import {
-    View, Text, FlatList, Image, TouchableOpacity, StyleSheet, ActivityIndicator
+    View, Text, FlatList, Image, TouchableOpacity, StyleSheet
 } from "react-native";
 import { useSelector, useDispatch } from "react-redux";
 import { fetchFavorites } from "../../utils/favoritesSlice";
 import { addAllFavoritesToCart } from "../../utils/cartSlice";
 import { useRouter } from "expo-router";
 import LoadingActivityIndicator from "../../component/LoadingActivityIndicator";
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
+import Colors from "../../constent/Colors";
+import CustomButton from "../../component/CustomButton";
+import { AntDesign } from "@expo/vector-icons";
+import customeFonts from "../../constent/customeFonts";
+import FloatingCustomButton from "../../component/FloatingCustomButton";
 
 export default function FavouriteScreen() {
     const dispatch = useDispatch();
     const { favorites, loading, error } = useSelector((state) => state.favorites);
-    console.log(favorites);
     const router = useRouter();
 
     useEffect(() => {
@@ -30,14 +35,6 @@ export default function FavouriteScreen() {
         return <LoadingActivityIndicator />;
     }
 
-    if (error) {
-        return (
-            <View style={styles.loaderContainer}>
-                <Text style={styles.errorText}>Error: {error}</Text>
-            </View>
-        );
-    }
-
     return (
         <View style={styles.container}>
             {/* Header Title */}
@@ -52,12 +49,17 @@ export default function FavouriteScreen() {
                             <Image source={{ uri: item.image || "https://via.placeholder.com/50" }} style={styles.productImage} />
                             <View style={styles.textContainer}>
                                 <Text style={styles.productName}>{item.name || "Loading..."}</Text>
-                                <Text style={styles.productSize}>325ml, Price</Text>
+                                <Text style={styles.productSize}>{item.priceDescription}</Text>
                             </View>
-                            <Text style={styles.productPrice}>${item.price || "--"}</Text>
+                            <View style={styles.priceArrowContainer}>
+                                <Text style={styles.productPrice}>${item.price || "--"}</Text>
+                                <AntDesign name="right" size={16} color={Colors.DarkGray} style={styles.arrowIcon} />
+                            </View>
                         </TouchableOpacity>
                     )}
                     keyExtractor={(item) => item.id}
+                    contentContainerStyle={styles.flatListContainer}
+                    showsVerticalScrollIndicator={false}
                 />
             ) : (
                 <View style={styles.noFavoritesContainer}>
@@ -67,9 +69,12 @@ export default function FavouriteScreen() {
 
             {/* Add All to Cart Button */}
             {favorites.length > 0 && (
-                <TouchableOpacity style={styles.addToCartButton} onPress={handleAddAllToCart}>
-                    <Text style={styles.addToCartText}>Add All To Cart</Text>
-                </TouchableOpacity>
+
+                <FloatingCustomButton
+                    title="Add All To Cart"
+                    onPress={handleAddAllToCart}
+                    disabled={loading}
+                />
             )}
         </View>
     );
@@ -78,61 +83,60 @@ export default function FavouriteScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "#fff",
+        backgroundColor: Colors.Secondary,
         paddingHorizontal: 20,
         paddingTop: 20,
-    },
-    loaderContainer: {
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-    },
-    loaderText: {
-        fontSize: 16,
-        marginTop: 10,
-        color: "#555",
-    },
-    errorText: {
-        fontSize: 16,
-        color: "red",
     },
     headerTitle: {
         fontSize: 22,
         fontWeight: "bold",
         textAlign: "center",
-        marginBottom: 10,
+        paddingBottom: hp("3%"),
+        borderBottomWidth: 1,
+        borderBottomColor: Colors.inputBorderColor,
+        paddingTop: hp("1%"),
+    },
+    flatListContainer: {
+        paddingBottom: hp("10%"),
     },
     itemContainer: {
         flexDirection: "row",
         alignItems: "center",
         paddingVertical: 12,
         borderBottomWidth: 1,
-        borderBottomColor: "#E5E5E5",
+        borderBottomColor: Colors.inputBorderColor,
     },
     productImage: {
-        width: 50,
-        height: 50,
-        borderRadius: 8,
-        marginRight: 12,
-        backgroundColor: "#f0f0f0",
+        width: 70,
+        height: 70,
+        marginRight: 10,
+        marginTop: 10
     },
     textContainer: {
         flex: 1,
+        marginLeft: wp(4)
     },
     productName: {
         fontSize: 16,
-        fontWeight: "bold",
-        color: "#333",
+        fontFamily: customeFonts.Lato_Bold
     },
     productSize: {
-        fontSize: 14,
+        fontSize: 13,
         color: "#777",
         marginTop: 2,
     },
+    priceArrowContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginLeft: 10,
+    },
     productPrice: {
         fontSize: 16,
-        fontWeight: "bold",
-        color: "#000",
+        fontFamily: customeFonts.Lato_Bold,
+        marginRight: 8, // Add space between price and arrow
+    },
+    arrowIcon: {
+        marginLeft: 4,
     },
     noFavoritesContainer: {
         flex: 1,
@@ -142,19 +146,6 @@ const styles = StyleSheet.create({
     noFavoritesText: {
         fontSize: 16,
         color: "#777",
-    },
-    addToCartButton: {
-        backgroundColor: "#5DB075",
-        paddingVertical: 15,
-        borderRadius: 10,
-        alignItems: "center",
-        marginTop: 20,
-        marginBottom: 10,
-    },
-    addToCartText: {
-        fontSize: 18,
-        color: "#fff",
-        fontWeight: "bold",
     },
 });
 
