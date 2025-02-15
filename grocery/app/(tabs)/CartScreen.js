@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { View, Text, FlatList, Image, TouchableOpacity, StyleSheet, ActivityIndicator } from "react-native";
+import { View, Text, FlatList, Image, TouchableOpacity, StyleSheet } from "react-native";
 import { useSelector, useDispatch } from "react-redux";
 import { fetchCart, removeFromCart, addToCart, decreaseFromCart } from "../../utils/cartSlice";
 import { AntDesign } from "@expo/vector-icons"; // Icons for + and - buttons
@@ -9,6 +9,9 @@ import { db, auth } from "../../firebase"; // Import Firebase
 import { doc, updateDoc, arrayUnion } from "firebase/firestore";
 import { stripe_secretKey } from "@env";
 import LoadingActivityIndicator from "../../component/LoadingActivityIndicator";
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
+import Colors from "../../constent/Colors";
+import customeFonts from "../../constent/customeFonts";
 
 export default function CartScreen() {
     const dispatch = useDispatch();
@@ -113,34 +116,50 @@ export default function CartScreen() {
                 data={cart}
                 renderItem={({ item }) => (
                     <View style={styles.cartItem}>
+                        {/* Left Side - Product Image */}
                         <Image source={{ uri: item.image }} style={styles.productImage} />
-                        <View style={styles.productDetails}>
-                            <Text style={styles.productName}>{item.name}</Text>
-                            <Text style={styles.productSize}>{item.size || "1kg, Price"}</Text>
+
+                        {/* Right Side - All Details */}
+                        <View style={styles.detailsContainer}>
+                            {/* Top Row - Product Name & Close Icon */}
+                            <View style={styles.productHeader}>
+                                <Text style={styles.productName}>{item.name}</Text>
+                                <TouchableOpacity onPress={() => dispatch(removeFromCart(item.id))}>
+                                    <AntDesign name="close" size={20} color={Colors.DarkGray} />
+                                </TouchableOpacity>
+                            </View>
+
+                            {/* Product Size */}
+                            <Text style={styles.productSize}>{item.priceDescription || "1kg, Price"}</Text>
+
+                            {/* Bottom Row - Quantity Controls & Price */}
+                            <View style={styles.quantityPriceRow}>
+                                <View style={styles.quantityContainer}>
+                                    <TouchableOpacity onPress={() => dispatch(decreaseFromCart(item.id))}>
+                                        <AntDesign name="minus" size={20} color="black" />
+                                    </TouchableOpacity>
+                                    <Text style={styles.quantityText}>{item.quantity}</Text>
+                                    <TouchableOpacity onPress={() => dispatch(addToCart({ productId: item.id }))}>
+                                        <AntDesign name="plus" size={20} color={Colors.Primary} />
+                                    </TouchableOpacity>
+                                </View>
+                                <Text style={styles.productPrice}>${(item.price * item.quantity).toFixed(2)}</Text>
+                            </View>
                         </View>
-                        <View style={styles.quantityContainer}>
-                            <TouchableOpacity onPress={() => dispatch(decreaseFromCart(item.id))}>
-                                <AntDesign name="minus" size={20} color="black" />
-                            </TouchableOpacity>
-                            <Text style={styles.quantityText}>{item.quantity}</Text>
-                            <TouchableOpacity onPress={() => dispatch(addToCart(item.id))}>
-                                <AntDesign name="plus" size={20} color="black" />
-                            </TouchableOpacity>
-                        </View>
-                        <Text style={styles.productPrice}>${(item.price * item.quantity).toFixed(2)}</Text>
-                        <TouchableOpacity onPress={() => dispatch(removeFromCart(item.id))}>
-                            <AntDesign name="close" size={20} color="black" />
-                        </TouchableOpacity>
                     </View>
                 )}
                 keyExtractor={(item) => item.id}
+                contentContainerStyle={styles.flatListContainer}
+                showsVerticalScrollIndicator={false}
             />
 
             {/* Checkout Button */}
-            <TouchableOpacity style={styles.checkoutButton} onPress={handleCheckout}>
-                <Text style={styles.checkoutText}>Go to Checkout</Text>
-                <Text style={styles.checkoutPrice}>${calculateTotal()}</Text>
-            </TouchableOpacity>
+            <View style={styles.buttonContainer}>
+                <TouchableOpacity style={styles.button} onPress={handleCheckout}>
+                    <Text style={styles.buttonText}>{`Go to Checkout $${calculateTotal()}`}</Text>
+                </TouchableOpacity>
+            </View>
+
         </View>
     );
 }
@@ -148,8 +167,8 @@ export default function CartScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "#fff",
-        padding: 15,
+        backgroundColor: Colors.Secondary,
+        paddingVertical: wp("4%"),
     },
     loading: {
         flex: 1,
@@ -157,73 +176,102 @@ const styles = StyleSheet.create({
         alignItems: "center",
     },
     headerTitle: {
-        fontSize: 24,
+        fontSize: 22,
         fontWeight: "bold",
         textAlign: "center",
-        marginBottom: 20,
-    },
-    cartItem: {
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "space-between",
-        backgroundColor: "#fff",
-        padding: 10,
+        paddingBottom: hp("3%"),
         borderBottomWidth: 1,
-        borderBottomColor: "#EAEAEA",
+        borderBottomColor: Colors.inputBorderColor,
+        paddingTop: hp("1%"),
+    },
+    flatListContainer: {
+        paddingHorizontal: wp("4%"),
+    },
+
+    cartItem: {
+        flexDirection: 'row',
+        alignItems: 'flex-start',
+        padding: 16,
+        paddingLeft: 0,
+        borderBottomWidth: 1,
+        borderBottomColor: Colors.inputBorderColor,
     },
     productImage: {
-        width: 50,
-        height: 50,
-        resizeMode: "contain",
+        width: 70,
+        height: 70,
+        marginRight: 10,
+        marginTop: 10
     },
-    productDetails: {
+    detailsContainer: {
         flex: 1,
-        marginLeft: 10,
+    },
+    productHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 6,
     },
     productName: {
         fontSize: 16,
-        fontWeight: "bold",
+        fontFamily: customeFonts.Lato_Bold,
+        flex: 1,
+        marginRight: 8,
     },
     productSize: {
-        fontSize: 12,
-        color: "gray",
+        fontSize: 14,
+        color: 'gray',
+        marginBottom: 10,
+        fontFamily: customeFonts.Lato_Regular
+    },
+    quantityPriceRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
     },
     quantityContainer: {
-        flexDirection: "row",
-        alignItems: "center",
+        flexDirection: 'row',
+        alignItems: 'center',
         borderWidth: 1,
-        borderColor: "#EAEAEA",
-        borderRadius: 5,
-        paddingHorizontal: 8,
-        paddingVertical: 5,
+        borderColor: '#EAEAEA',
+        borderRadius: 8,
+        paddingHorizontal: 12,
+        paddingVertical: 6,
     },
     quantityText: {
         fontSize: 16,
-        fontWeight: "bold",
-        marginHorizontal: 10,
+        fontWeight: 'bold',
+        marginHorizontal: 12,
     },
     productPrice: {
         fontSize: 16,
-        fontWeight: "bold",
+        fontFamily: customeFonts.Lato_Bold,
+        color: Colors.Primary
     },
-    checkoutButton: {
-        flexDirection: "row",
-        backgroundColor: "#4CAF50",
-        paddingVertical: 15,
-        borderRadius: 10,
+
+    buttonContainer: {
+        position: 'absolute',
+        bottom: hp('2%'),
+        left: 0,
+        right: 0,
+        alignItems: 'center',
+        backgroundColor: 'transparent',
+    },
+    button: {
+        width: wp('90%'),  // 90% of screen width
+        height: hp('7%'),   // 7% of screen height
+        borderRadius: 15,
+        backgroundColor: Colors.Primary,
         justifyContent: "center",
         alignItems: "center",
-        marginTop: 20,
+        elevation: 5,      // For Android shadow
+        shadowColor: '#000', // For iOS shadow
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
     },
-    checkoutText: {
-        fontSize: 18,
-        fontWeight: "bold",
-        color: "#fff",
-        marginRight: 10,
-    },
-    checkoutPrice: {
-        fontSize: 16,
-        fontWeight: "bold",
-        color: "#fff",
+    buttonText: {
+        fontSize: 20,
+        color: Colors.Secondary,
+        fontFamily: customeFonts.Gilroy_ExtraBold,
     },
 });
