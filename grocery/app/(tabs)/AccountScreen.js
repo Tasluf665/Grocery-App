@@ -2,19 +2,21 @@ import React, { useState, useEffect } from "react";
 import {
     View,
     Text,
-    Image,
     TouchableOpacity,
     StyleSheet,
     ScrollView,
     Alert,
-    ActivityIndicator,
 } from "react-native";
 import { signOut } from "firebase/auth";
 import { auth, db } from "../../firebase"; // Firebase imports
 import { doc, getDoc } from "firebase/firestore";
 import { router } from "expo-router";
-import { AntDesign, MaterialIcons, Ionicons, Feather } from "@expo/vector-icons";
+import { MaterialIcons, Ionicons, Feather } from "@expo/vector-icons";
 import LoadingActivityIndicator from "../../component/LoadingActivityIndicator";
+import customeFonts from "../../constent/customeFonts";
+import Colors from "../../constent/Colors";
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
+
 
 export default function AccountScreen() {
     const [userInfo, setUserInfo] = useState(null);
@@ -61,44 +63,34 @@ export default function AccountScreen() {
         <ScrollView style={styles.container}>
             {/* Profile Section */}
             <View style={styles.profileSection}>
-                <Image
-                    source={{
-                        uri: "https://via.placeholder.com/80", // Replace with user profile image URL
-                    }}
-                    style={styles.profileImage}
-                />
-                <View>
-                    <Text style={styles.profileName}>{userInfo?.username || "Guest"}</Text>
-                    <Text style={styles.profileEmail}>{userInfo?.email || "No email available"}</Text>
-                </View>
-                <TouchableOpacity style={styles.editIcon}>
-                    <AntDesign name="edit" size={20} color="green" />
-                </TouchableOpacity>
+
+                <Text style={styles.profileName}>{userInfo?.username || "Guest"}</Text>
+                <Text style={styles.profileEmail}>{userInfo?.email || "No email available"}</Text>
             </View>
 
             {/* Menu Options */}
             <View style={styles.menuSection}>
-                <MenuItem icon={<Ionicons name="cart-outline" size={24} color="black" />} title="Orders" />
-                <MenuItem icon={<MaterialIcons name="person-outline" size={24} color="black" />} title="My Details" />
-                <MenuItem icon={<Ionicons name="location-outline" size={24} color="black" />} title="Delivery Address" />
-                <MenuItem icon={<Feather name="credit-card" size={24} color="black" />} title="Payment Methods" />
-                <MenuItem icon={<MaterialIcons name="local-offer" size={24} color="black" />} title="Promo Code" />
-                <MenuItem icon={<Ionicons name="notifications-outline" size={24} color="black" />} title="Notifications" />
-                <MenuItem icon={<Ionicons name="help-circle-outline" size={24} color="black" />} title="Help" />
-                <MenuItem icon={<Ionicons name="information-circle-outline" size={24} color="black" />} title="About" />
+                <MenuItem onPress={() => router.push("/OrderScreen")} icon={<Ionicons name="cart-outline" size={24} color="black" />} title="Orders" />
+                <MenuItem onPress={() => router.push("/IncompleteScreen")} icon={<MaterialIcons name="person-outline" size={24} color="black" />} title="My Details" />
+                <MenuItem onPress={() => router.push("/IncompleteScreen")} icon={<Ionicons name="location-outline" size={24} color="black" />} title="Delivery Address" />
+                <MenuItem onPress={() => router.push("/IncompleteScreen")} icon={<Feather name="credit-card" size={24} color="black" />} title="Payment Methods" />
+                <MenuItem onPress={() => router.push("/IncompleteScreen")} icon={<MaterialIcons name="local-offer" size={24} color="black" />} title="Promo Code" />
+                <MenuItem onPress={() => router.push("/IncompleteScreen")} icon={<Ionicons name="notifications-outline" size={24} color="black" />} title="Notifications" />
+                <MenuItem onPress={() => router.push("/IncompleteScreen")} icon={<Ionicons name="help-circle-outline" size={24} color="black" />} title="Help" />
+                <MenuItem onPress={() => router.push("/IncompleteScreen")} icon={<Ionicons name="information-circle-outline" size={24} color="black" />} title="About" />
             </View>
 
             {/* Logout Button */}
             <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-                <Ionicons name="log-out-outline" size={20} color="green" />
+                <Ionicons name="log-out-outline" size={20} color={Colors.Primary} />
                 <Text style={styles.logoutText}>Log Out</Text>
             </TouchableOpacity>
         </ScrollView>
     );
 }
 
-const MenuItem = ({ icon, title }) => (
-    <TouchableOpacity style={styles.menuItem}>
+const MenuItem = ({ icon, title, onPress }) => (
+    <TouchableOpacity onPress={onPress} style={styles.menuItem}>
         {icon}
         <Text style={styles.menuItemText}>{title}</Text>
         <Ionicons name="chevron-forward-outline" size={20} color="gray" />
@@ -113,30 +105,25 @@ const styles = StyleSheet.create({
         paddingTop: 10,
     },
     profileSection: {
-        flexDirection: "row",
-        alignItems: "center",
         marginBottom: 20,
-        backgroundColor: "#fff",
+        backgroundColor: Colors.Secondary,
         borderRadius: 10,
-        padding: 15,
+        paddingHorizontal: wp(5),
+        paddingVertical: hp(3),
         shadowColor: "#000",
         shadowOpacity: 0.1,
         shadowRadius: 5,
         elevation: 2,
-    },
-    profileImage: {
-        width: 80,
-        height: 80,
-        borderRadius: 40,
-        marginRight: 15,
+        alignItems: "center",
+        marginTop: 10
     },
     profileName: {
         fontSize: 18,
-        fontWeight: "bold",
+        fontFamily: customeFonts.Lato_Bold
     },
     profileEmail: {
         fontSize: 14,
-        color: "gray",
+        color: Colors.DarkGray
     },
     editIcon: {
         marginLeft: "auto",
@@ -166,8 +153,8 @@ const styles = StyleSheet.create({
     },
     logoutText: {
         fontSize: 16,
-        fontWeight: "bold",
-        color: "green",
+        fontFamily: customeFonts.Lato_Bold,
+        color: Colors.Primary,
         marginLeft: 10,
     },
 });

@@ -10,6 +10,7 @@ export default () => {
                     presentation: "modal"
                 }}
             />
+            <Stack.Screen name="IncompleteScreen" />
         </Stack>
     );
 };
