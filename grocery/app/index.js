@@ -2,7 +2,6 @@ import React from "react";
 import { useFonts } from "expo-font";
 import { Redirect } from "expo-router";
 
-
 const index = () => {
   const [fontsLoaded] = useFonts({
     Gilroy_ExtraBold: require("../assets/fonts/Gilroy/Gilroy_ExtraBold.otf"),

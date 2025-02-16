@@ -1,4 +1,4 @@
-import { StyleSheet, View, Image } from "react-native";
+import { StyleSheet, View, Image, StatusBar } from "react-native";
 import React, { useEffect } from "react";
 import { useNavigation } from "expo-router";
 
@@ -18,6 +18,10 @@ const SplashScreen = () => {
 
   return (
     <View style={styles.container}>
+      <StatusBar
+        backgroundColor={Colors.Primary} // Match background color
+        barStyle="light-content" // Light icons for dark background
+      />
       <Image source={require("../../assets/StartupImages/logo.png")} style={styles.logo} />
     </View>
   );

@@ -5,6 +5,7 @@ import {
   ImageBackground,
   Text,
   Image,
+  StatusBar
 } from "react-native";
 import { router } from "expo-router";
 import { auth } from "../../firebase";
@@ -26,6 +27,11 @@ export default function WelcomeScreen() {
 
   return (
     <View style={styles.container}>
+      <StatusBar
+        backgroundColor="transparent"
+        translucent={true}
+        barStyle="light-content"
+      />
       <ImageBackground
         source={require("../../assets/StartupImages/Start.png")}
         resizeMode="cover"
