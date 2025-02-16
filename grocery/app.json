@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "grocery",
-    "slug": "grocery",
-    "scheme": "grocery",
+    "name": "grocery-app",
+    "slug": "grocery-app",
+    "scheme": "grocery-app",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -20,7 +20,8 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.tasluf.groceryapp"
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -29,23 +30,32 @@
       "expo-router",
       [
         "expo-font",
-          {
-            "fonts": [
-              "./assets/fonts/Gilroy/Gilroy_ExtraBold.otf",
-              "./assets/fonts/Gilroy/Gilroy_Light.otf",
-              "./assets/fonts/Lato/Lato-Black.ttf",
-              "./assets/fonts/Lato/Lato-BlackItalic.ttf",
-              "./assets/fonts/Lato/Lato-Bold.ttf",
-              "./assets/fonts/Lato/Lato-BoldItalic.ttf",
-              "./assets/fonts/Lato/Lato-Italic.ttf",
-              "./assets/fonts/Lato/Lato-Light.ttf",
-              "./assets/fonts/Lato/Lato-LightItalic.ttf",
-              "./assets/fonts/Lato/Lato-Regular.ttf",
-              "./assets/fonts/Lato/Lato-Thin.ttf",
-              "./assets/fonts/Lato/Lato-ThinItalic.ttf"
-            ]
-          }
+        {
+          "fonts": [
+            "./assets/fonts/Gilroy/Gilroy_ExtraBold.otf",
+            "./assets/fonts/Gilroy/Gilroy_Light.otf",
+            "./assets/fonts/Lato/Lato-Black.ttf",
+            "./assets/fonts/Lato/Lato-BlackItalic.ttf",
+            "./assets/fonts/Lato/Lato-Bold.ttf",
+            "./assets/fonts/Lato/Lato-BoldItalic.ttf",
+            "./assets/fonts/Lato/Lato-Italic.ttf",
+            "./assets/fonts/Lato/Lato-Light.ttf",
+            "./assets/fonts/Lato/Lato-LightItalic.ttf",
+            "./assets/fonts/Lato/Lato-Regular.ttf",
+            "./assets/fonts/Lato/Lato-Thin.ttf",
+            "./assets/fonts/Lato/Lato-ThinItalic.ttf"
+          ]
+        }
       ]
-    ]
+    ],
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "d8f6c5dc-79e4-489a-8d14-5034c1fad6d6"
+      }
+    },
+    "owner": "tasluf"
   }
 }
