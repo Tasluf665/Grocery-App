@@ -1,15 +1,15 @@
 {
   "expo": {
-    "name": "grocery-app",
+    "name": "Nectar",
     "slug": "grocery-app",
     "scheme": "grocery-app",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/images/icon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/splash-icon.png",
+      "image": "./assets/images/splash-icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -18,7 +18,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
       "package": "com.tasluf.groceryapp"
@@ -56,6 +56,12 @@
         "projectId": "d8f6c5dc-79e4-489a-8d14-5034c1fad6d6"
       }
     },
-    "owner": "tasluf"
+    "owner": "tasluf",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/d8f6c5dc-79e4-489a-8d14-5034c1fad6d6"
+    }
   }
 }

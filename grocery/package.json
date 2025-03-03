@@ -29,7 +29,8 @@
     "react-native-screens": "~4.4.0",
     "react-redux": "^9.2.0",
     "redux-persist": "^6.0.0",
-    "expo-dev-client": "~5.0.12"
+    "expo-dev-client": "~5.0.12",
+    "expo-updates": "~0.26.18"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0"
