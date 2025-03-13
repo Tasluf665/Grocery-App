@@ -70,6 +70,31 @@ router.post('/new', asyncMiddleware(async (req, res) => {
     }
 }));
 
+router.put('/update/:id', asyncMiddleware(async (req, res) => {
+    try {
+        const id = req.params.id;
+        const data = req.body;
+        const productRef = doc(db, 'products', id);
+        await updateDoc(productRef, data);
+        const updatedProduct = await getDoc(productRef);
+
+        if (updatedProduct.exists()) {
+            const product = {
+                id: updatedProduct.id,
+                ...updatedProduct.data()
+            };
+            res.status(200).send({
+                message: 'Product updated successfully',
+                product
+            });
+        } else {
+            res.status(400).send('Failed to retrieve the updated product');
+        }
+    } catch (error) {
+        res.status(400).send(error.message);
+    }
+}));
+
 router.delete('/delete/:id', asyncMiddleware(async (req, res) => {
     try {
         const id = req.params.id;

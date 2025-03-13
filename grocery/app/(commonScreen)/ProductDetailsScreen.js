@@ -218,7 +218,7 @@ const styles = StyleSheet.create({
         marginBottom: hp(1),
     },
     nutritionText: {
-        fontSize: wp(3.5),
+        fontSize: Math.min(16, wp(3.5)),
         fontFamily: customeFonts.Lato_Medium,
         color: Colors.Secondary,
     },

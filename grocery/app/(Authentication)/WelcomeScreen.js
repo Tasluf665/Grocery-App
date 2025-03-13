@@ -34,7 +34,7 @@ export default function WelcomeScreen() {
       />
       <ImageBackground
         source={require("../../assets/StartupImages/Start.png")}
-        resizeMode="cover"
+        resizeMode="stretch"
         style={styles.image}
       >
         <View style={styles.itemContainer}>

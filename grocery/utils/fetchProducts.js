@@ -129,8 +129,7 @@ export const fetchProductsBySearch = async (searchQuery) => {
         const productsRef = collection(db, "products");
         const searchQ = query(
             productsRef,
-            where("lowercaseName", ">=", searchQuery.toLowerCase()),
-            where("lowercaseName", "<=", searchQuery.toLowerCase() + "\uf8ff"),
+            where("keywords", "array-contains", searchQuery.toLowerCase()),
             limit(20) // Limit to 20 results
         );
 
