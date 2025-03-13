@@ -60,20 +60,31 @@ const OrderScreen = () => {
                         </View>
 
                         {/* Order Items */}
-                        {item.items.map((product) => (
-                            <View key={product.id} style={styles.productItem}>
-                                <Image source={{ uri: product.image }} style={styles.productImage} />
-                                <View style={styles.productInfo}>
-                                    <Text style={styles.productName}>{product.name}</Text>
-                                    <Text style={styles.productMeta}>
-                                        {product.quantity} x ${product.price.toFixed(2)}
+                        {item.items.map((product) => {
+                            let price = 0;
+                            try {
+                                price = parseFloat(product.price);
+                                if (isNaN(price)) {
+                                    price = 0;
+                                }
+                            } catch (error) {
+                                price = 0;
+                            }
+                            return (
+                                <View key={product.id} style={styles.productItem}>
+                                    <Image source={{ uri: product.image }} style={styles.productImage} />
+                                    <View style={styles.productInfo}>
+                                        <Text style={styles.productName}>{product.name}</Text>
+                                        <Text style={styles.productMeta}>
+                                            {product.quantity} x ${price.toFixed(2)}
+                                        </Text>
+                                    </View>
+                                    <Text style={styles.productTotal}>
+                                        ${(product.quantity * price).toFixed(2)}
                                     </Text>
                                 </View>
-                                <Text style={styles.productTotal}>
-                                    ${(product.quantity * product.price).toFixed(2)}
-                                </Text>
-                            </View>
-                        ))}
+                            );
+                        })}
 
                         {/* Order Status */}
                         <View style={styles.statusContainer}>

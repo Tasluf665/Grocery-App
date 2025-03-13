@@ -19,7 +19,6 @@
     },
     "preview2": {
       "distribution": "internal",
-      "autoIncrement": true,
       "channel": "preview"
     },
     "production": {
