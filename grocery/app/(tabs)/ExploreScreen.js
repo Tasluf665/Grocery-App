@@ -9,6 +9,7 @@ import LoadingActivityIndicator from "../../component/LoadingActivityIndicator";
 import ExplorePageColor from "../../constent/ExplorePageColor";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
 import customeFonts from "../../constent/customeFonts";
+import { Snackbar } from 'react-native-paper';
 
 import SearchBar from "../../component/SearchBar";
 import Colors from "../../constent/Colors";
@@ -25,6 +26,11 @@ export default function ExploreScreen() {
     const { results: searchResults, loading: searchLoading } = useSelector((state) => state.search);
 
     const [searchQuery, setSearchQuery] = useState("");
+
+    // Snackbar state
+    const [snackbarVisible, setSnackbarVisible] = useState(false);
+    const onOpenSnackBar = () => setSnackbarVisible(true);
+    const onDismissSnackBar = () => setSnackbarVisible(false);
 
     // Fetch categories from Redux store on mount
     useEffect(() => {
@@ -72,7 +78,7 @@ export default function ExploreScreen() {
     };
 
     const renderProductCard = ({ item }) => (
-        <ProductCard product={item} />
+        <ProductCard product={item} onOpenSnackBar={onOpenSnackBar} />
     );
 
     if (loading) {
@@ -102,7 +108,13 @@ export default function ExploreScreen() {
                     showsVerticalScrollIndicator={false}
                 />}
 
-            {/* Categories Grid using FlatList */}
+            <Snackbar
+                visible={snackbarVisible}
+                onDismiss={onDismissSnackBar}
+                style={styles.snackbar}
+            >
+                Product added to cart!
+            </Snackbar>
 
         </View>
     );
@@ -172,5 +184,11 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: "bold",
         textAlign: "center",
+    },
+
+    snackbar: {
+        backgroundColor: Colors.Primary,
+        width: '80%',
+        alignSelf: 'center',
     },
 });

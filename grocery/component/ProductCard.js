@@ -8,7 +8,7 @@ import Colors from "../constent/Colors";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
 
 
-const ProductCard = ({ product }) => {
+const ProductCard = ({ product, onOpenSnackBar }) => {
     const dispatch = useDispatch();
     const router = useRouter();
     const [nameLines, setNameLines] = useState(1); // Track number of lines in product name
@@ -49,6 +49,7 @@ const ProductCard = ({ product }) => {
                     onPress={async () => {
                         await dispatch(addToCart({ productId: product.id }));
                         await dispatch(fetchCart());
+                        onOpenSnackBar();
                     }}
                 >
                     <AntDesign name="plus" size={20} color="white" />

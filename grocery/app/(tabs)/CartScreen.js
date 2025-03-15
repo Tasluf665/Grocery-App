@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { View, Text, FlatList, Image, TouchableOpacity, StyleSheet } from "react-native";
 import { useSelector, useDispatch } from "react-redux";
 import { fetchCart, removeFromCart, addToCart, decreaseFromCart } from "../../utils/cartSlice";
@@ -14,11 +14,17 @@ import Colors from "../../constent/Colors";
 import customeFonts from "../../constent/customeFonts";
 
 import FloatingCustomButton from "../../component/FloatingCustomButton";
+import SuccessDialog from "../../component/SuccessDialog";
+import ErrorDialog from "../../component/ErrorDialog";
 
 export default function CartScreen() {
     const dispatch = useDispatch();
     const { cart, loading } = useSelector((state) => state.cart);
     const stripe = useStripe(); // Initialize Stripe
+
+    const [successDialogVisible, setSuccessDialogVisible] = useState(false);
+    const [errorDialogVisible, setErrorDialogVisible] = useState(false);
+    const [errorMessage, setErrorMessage] = useState("");
 
     useEffect(() => {
         dispatch(fetchCart());
@@ -47,7 +53,8 @@ export default function CartScreen() {
 
             if (initError) {
                 console.error("Error initializing PaymentSheet:", initError);
-                alert(`PaymentSheet init failed: ${initError.message}`);
+                setErrorMessage(`PaymentSheet init failed: ${initError.message}`);
+                setErrorDialogVisible(true);
                 return;
             }
 
@@ -55,15 +62,17 @@ export default function CartScreen() {
             const { error } = await stripe.presentPaymentSheet();
 
             if (error) {
-                alert(`Payment failed: ${error.message}`);
+                setErrorMessage(`Payment failed: ${error.message}`);
+                setErrorDialogVisible(true);
             } else {
-                alert("Payment successful!");
+                setSuccessDialogVisible(true);
                 await savePaymentToFirestore(paymentIntent.id);
                 dispatch(fetchCart()); // Refresh cart after checkout
             }
         } catch (error) {
             console.error("Payment error:", error);
-            alert("Something went wrong with payment.");
+            setErrorMessage("Something went wrong with payment.");
+            setErrorDialogVisible(true);
         }
     };
 
@@ -108,7 +117,6 @@ export default function CartScreen() {
 
         dispatch(fetchCart()); // Refresh cart in Redux
     };
-
 
     return (
         <View style={styles.container}>
@@ -161,6 +169,19 @@ export default function CartScreen() {
                 disabled={loading}
             />
 
+            <SuccessDialog
+                visible={successDialogVisible}
+                onDismiss={() => setSuccessDialogVisible(false)}
+                title="Success"
+                message="Payment successful!"
+            />
+
+            <ErrorDialog
+                visible={errorDialogVisible}
+                onDismiss={() => setErrorDialogVisible(false)}
+                title="Error"
+                message={errorMessage}
+            />
         </View>
     );
 }

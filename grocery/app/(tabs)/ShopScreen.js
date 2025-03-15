@@ -3,6 +3,7 @@ import { View, Text, FlatList, TouchableOpacity, StyleSheet, Image } from "react
 import { useRouter } from "expo-router";
 import { useDispatch, useSelector } from "react-redux";
 import { debounce } from "lodash";
+import { Snackbar } from 'react-native-paper';
 
 import ProductCard from "../../component/ProductCard";
 import { fetchProductsBySearch } from "../../utils/fetchProducts";
@@ -31,6 +32,11 @@ export default function ShopScreen() {
     const [bannerImages, setBannerImages] = useState([]);
     const [currentIndex, setCurrentIndex] = useState(0);
     const flatListRef = useRef(null);
+
+    // Snackbar state
+    const [snackbarVisible, setSnackbarVisible] = useState(false);
+    const onOpenSnackBar = () => setSnackbarVisible(true);
+    const onDismissSnackBar = () => setSnackbarVisible(false);
 
     // Fetch special sections when component mounts
     useEffect(() => {
@@ -107,7 +113,7 @@ export default function ShopScreen() {
             </View>
             <FlatList
                 data={section.products.slice(0, 6)}
-                renderItem={({ item }) => <ProductCard product={item} />}
+                renderItem={({ item }) => <ProductCard product={item} onOpenSnackBar={onOpenSnackBar} />}
                 keyExtractor={(item) => item.id}
                 horizontal
                 showsHorizontalScrollIndicator={false}
@@ -163,7 +169,7 @@ export default function ShopScreen() {
                 return (
                     <FlatList
                         data={item.data}
-                        renderItem={({ item }) => <ProductCard product={item} />}
+                        renderItem={({ item }) => <ProductCard product={item} onOpenSnackBar={onOpenSnackBar} />}
                         keyExtractor={(item) => item.id}
                         numColumns={2}
                         columnWrapperStyle={styles.row}
@@ -178,12 +184,20 @@ export default function ShopScreen() {
 
     return (
         <View style={styles.container}>
+
             <FlatList
                 data={listData}
                 renderItem={renderItem}
                 keyExtractor={(item, index) => `${item.type}-${index}`}
                 showsVerticalScrollIndicator={false}
             />
+            <Snackbar
+                visible={snackbarVisible}
+                onDismiss={onDismissSnackBar}
+                style={styles.snackbar}
+            >
+                Product added to cart!
+            </Snackbar>
         </View>
     );
 }
@@ -234,5 +248,11 @@ const styles = StyleSheet.create({
     },
     row: {
         justifyContent: "space-between",
+    },
+
+    snackbar: {
+        backgroundColor: Colors.Primary,
+        width: '80%',
+        alignSelf: 'center',
     },
 });

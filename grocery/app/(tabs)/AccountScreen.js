@@ -5,22 +5,28 @@ import {
     TouchableOpacity,
     StyleSheet,
     ScrollView,
-    Alert,
 } from "react-native";
 import { signOut } from "firebase/auth";
 import { auth, db } from "../../firebase"; // Firebase imports
 import { doc, getDoc } from "firebase/firestore";
 import { router } from "expo-router";
 import { MaterialIcons, Ionicons, Feather } from "@expo/vector-icons";
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
+
 import LoadingActivityIndicator from "../../component/LoadingActivityIndicator";
 import customeFonts from "../../constent/customeFonts";
 import Colors from "../../constent/Colors";
-import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
+import ErrorDialog from "../../component/ErrorDialog";
 
 
 export default function AccountScreen() {
     const [userInfo, setUserInfo] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [errorDialogVisible, setErrorDialogVisible] = React.useState(false);
+
+    const hideErrorDialog = () => {
+        setErrorDialogVisible(false);
+    };
 
     useEffect(() => {
         const fetchUserInfo = async () => {
@@ -55,7 +61,7 @@ export default function AccountScreen() {
             router.replace("LoginScreen");
         } catch (error) {
             console.error(error);
-            Alert.alert("Error", "Unable to logout. Please try again.");
+            setErrorDialogVisible(true);
         }
     };
 
@@ -79,6 +85,13 @@ export default function AccountScreen() {
                 <MenuItem onPress={() => router.push("/IncompleteScreen")} icon={<Ionicons name="help-circle-outline" size={24} color="black" />} title="Help" />
                 <MenuItem onPress={() => router.push("/IncompleteScreen")} icon={<Ionicons name="information-circle-outline" size={24} color="black" />} title="About" />
             </View>
+
+            <ErrorDialog
+                visible={errorDialogVisible}
+                onDismiss={hideErrorDialog}
+                title="Error"
+                message="Unable to logout. Please try again."
+            />
 
             {/* Logout Button */}
             <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>

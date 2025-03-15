@@ -1,8 +1,9 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { View, Text, FlatList, StyleSheet, TouchableOpacity } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useDispatch, useSelector } from "react-redux";
 import { AntDesign } from "@expo/vector-icons"; // For back button icon
+import { Snackbar } from 'react-native-paper';
 
 import { getProductsByCategoryOrSection } from "../../utils/productsSlice";
 import ProductCard from "../../component/ProductCard";
@@ -13,6 +14,11 @@ export default function ProductCategoryScreen() {
     const { id, type, title } = useLocalSearchParams();
     const dispatch = useDispatch();
     const router = useRouter();
+
+    // Snackbar state
+    const [snackbarVisible, setSnackbarVisible] = useState(false);
+    const onOpenSnackBar = () => setSnackbarVisible(true);
+    const onDismissSnackBar = () => setSnackbarVisible(false);
 
     const { products, loading } = useSelector((state) => state.products);
 
@@ -40,12 +46,20 @@ export default function ProductCategoryScreen() {
             {/* Product List */}
             <FlatList
                 data={products}
-                renderItem={({ item }) => <ProductCard product={item} />}
+                renderItem={({ item }) => <ProductCard product={item} onOpenSnackBar={onOpenSnackBar} />}
                 keyExtractor={(item) => item.id}
                 numColumns={2}
                 columnWrapperStyle={styles.row}
                 contentContainerStyle={styles.listContent}
             />
+
+            <Snackbar
+                visible={snackbarVisible}
+                onDismiss={onDismissSnackBar}
+                style={styles.snackbar}
+            >
+                Product added to cart!
+            </Snackbar>
         </View>
     );
 }
@@ -81,5 +95,11 @@ const styles = StyleSheet.create({
         paddingBottom: 20,
         paddingHorizontal: 10,
 
+    },
+
+    snackbar: {
+        backgroundColor: Colors.Primary,
+        width: '80%',
+        alignSelf: 'center',
     },
 });

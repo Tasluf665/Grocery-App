@@ -11,7 +11,8 @@ import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-nat
 import customeFonts from "../../constent/customeFonts";
 import CustomButton from "../../component/CustomButton";
 import Colors from "../../constent/Colors";
-
+import { Snackbar } from 'react-native-paper';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function ProductDetailsScreen() {
     const { id } = useLocalSearchParams();
@@ -20,6 +21,11 @@ export default function ProductDetailsScreen() {
     const [loading, setLoading] = useState(true);
     const dispatch = useDispatch();
     const favorites = useSelector((state) => state.favorites.favorites);
+
+    // Snackbar state
+    const [snackbarVisible, setSnackbarVisible] = useState(false);
+    const onOpenSnackBar = () => setSnackbarVisible(true);
+    const onDismissSnackBar = () => setSnackbarVisible(false);
 
     useEffect(() => {
         if (id) {
@@ -57,81 +63,96 @@ export default function ProductDetailsScreen() {
         await dispatch(addToCart({ productId: product.id, quantity })); // Pass the quantity
         await dispatch(fetchCart());
         setQuantity(1); // Reset quantity
-
+        onOpenSnackBar();
     };
 
     return (
-        <ScrollView style={styles.container}>
-            {/* Product Image */}
-            <Image source={{ uri: product.image }} style={styles.productImage} />
+        <SafeAreaView style={styles.safeArea}>
+            <ScrollView style={styles.container}>
+                {/* Product Image */}
+                <Image source={{ uri: product.image }} style={styles.productImage} />
 
-            {/* Product Details */}
-            <View style={styles.headerRow}>
-                <Text style={styles.productName}>{product.name}</Text>
-                <TouchableOpacity onPress={toggleFavorite}>
-                    <AntDesign name={isFavorite ? "heart" : "hearto"} size={22} color={isFavorite ? "red" : "black"} />
-                </TouchableOpacity>
-            </View>
-            <Text style={styles.productSize}>{product.priceDescription}</Text>
-
-            {/* Quantity and Price */}
-            <View style={styles.quantityRow}>
-                <View style={styles.quantityContainer}>
-                    <TouchableOpacity onPress={decreaseQuantity} style={styles.quantityButton}>
-                        <AntDesign name="minus" size={18} color={Colors.DarkGray} />
-                    </TouchableOpacity>
-                    <Text style={styles.quantityText}>{quantity}</Text>
-                    <TouchableOpacity onPress={increaseQuantity} style={styles.quantityButton}>
-                        <AntDesign name="plus" size={18} color={Colors.Primary} />
+                {/* Product Details */}
+                <View style={styles.headerRow}>
+                    <Text style={styles.productName}>{product.name}</Text>
+                    <TouchableOpacity onPress={toggleFavorite}>
+                        <AntDesign name={isFavorite ? "heart" : "hearto"} size={22} color={isFavorite ? "red" : "black"} />
                     </TouchableOpacity>
                 </View>
-                <Text style={styles.productPrice}>${(product.price * quantity).toFixed(2)}</Text>
-            </View>
+                <Text style={styles.productSize}>{product.priceDescription}</Text>
 
-            {/* Product Description */}
-            <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Product Detail</Text>
-                <Text style={styles.productDescription}>{product.description}</Text>
-            </View>
-
-            {/* Nutritions */}
-            <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Nutritions</Text>
-                <View style={styles.nutritionContainer}>
-                    {product.nutrition.map((nutrient, index) => (
-                        <View key={index} style={styles.nutritionBadge}>
-                            <Text style={styles.nutritionText}>{nutrient}</Text>
-                        </View>
-                    ))}
+                {/* Quantity and Price */}
+                <View style={styles.quantityRow}>
+                    <View style={styles.quantityContainer}>
+                        <TouchableOpacity onPress={decreaseQuantity} style={styles.quantityButton}>
+                            <AntDesign name="minus" size={18} color={Colors.DarkGray} />
+                        </TouchableOpacity>
+                        <Text style={styles.quantityText}>{quantity}</Text>
+                        <TouchableOpacity onPress={increaseQuantity} style={styles.quantityButton}>
+                            <AntDesign name="plus" size={18} color={Colors.Primary} />
+                        </TouchableOpacity>
+                    </View>
+                    <Text style={styles.productPrice}>${(product.price * quantity).toFixed(2)}</Text>
                 </View>
-            </View>
 
-            {/* Reviews */}
-            <View style={styles.section}>
-                <View style={styles.reviewRow}>
-                    <Text style={styles.sectionTitle}>Review</Text>
-                    <View style={styles.reviewContainer}>
-                        {[...Array(5)].map((_, index) => (
-                            <AntDesign
-                                key={index}
-                                name={index < product.rating ? "star" : "staro"}
-                                size={16}
-                                color="orange"
-                            />
+                {/* Product Description */}
+                <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>Product Detail</Text>
+                    <Text style={styles.productDescription}>{product.description}</Text>
+                </View>
+
+                {/* Nutritions */}
+                <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>Nutritions</Text>
+                    <View style={styles.nutritionContainer}>
+                        {product.nutrition.map((nutrient, index) => (
+                            <View key={index} style={styles.nutritionBadge}>
+                                <Text style={styles.nutritionText}>{nutrient}</Text>
+                            </View>
                         ))}
                     </View>
                 </View>
-            </View>
 
-            <View style={styles.buttonContainer}>
-                <CustomButton title="Add To Basket" onPress={handleAddToCart} />
-            </View>
+                {/* Reviews */}
+                <View style={styles.section}>
+                    <View style={styles.reviewRow}>
+                        <Text style={styles.sectionTitle}>Review</Text>
+                        <View style={styles.reviewContainer}>
+                            {[...Array(5)].map((_, index) => (
+                                <AntDesign
+                                    key={index}
+                                    name={index < product.rating ? "star" : "staro"}
+                                    size={16}
+                                    color="orange"
+                                />
+                            ))}
+                        </View>
+                    </View>
+                </View>
 
-        </ScrollView>
+                <View style={styles.buttonContainer}>
+                    <CustomButton title="Add To Basket" onPress={handleAddToCart} />
+                </View>
+            </ScrollView>
+
+            <View style={styles.snackbarContainer}>
+                <Snackbar
+                    visible={snackbarVisible}
+                    onDismiss={onDismissSnackBar}
+                    style={styles.snackbar}
+                >
+                    Product added to cart!
+                </Snackbar>
+            </View>
+        </SafeAreaView>
     );
 }
 
 const styles = StyleSheet.create({
+    safeArea: {
+        flex: 1,
+        backgroundColor: "#fff",
+    },
     container: {
         flex: 1,
         backgroundColor: "#fff",
@@ -241,5 +262,17 @@ const styles = StyleSheet.create({
         color: "red",
         textAlign: "center",
         marginTop: 20,
+    },
+    snackbarContainer: {
+        position: 'absolute',
+        top: hp(10), // Adjust this value to position the Snackbar higher or lower
+        left: 0,
+        right: 0,
+        alignItems: 'center',
+    },
+    snackbar: {
+        backgroundColor: Colors.Primary,
+        width: '80%',
+        alignSelf: 'center',
     },
 });
