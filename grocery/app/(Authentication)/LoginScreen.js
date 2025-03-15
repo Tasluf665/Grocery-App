@@ -1,8 +1,8 @@
 import { StyleSheet, Text, View, TouchableOpacity, Image, Alert, KeyboardAvoidingView, Platform, ScrollView } from "react-native";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { router } from "expo-router";
 import { useDispatch, useSelector } from "react-redux";
-import { loginUser, forgotPassword } from "../../utils/authSlice";
+import { loginUser, forgotPassword, resetError } from "../../utils/authSlice";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
 
 import CustomInput from "../../component/CustomInput";
@@ -10,16 +10,27 @@ import CustomButton from "../../component/CustomButton";
 import customeFonts from "../../constent/customeFonts";
 import Colors from "../../constent/Colors";
 import LoadingActivityIndicator from "../../component/LoadingActivityIndicator";
+import ErrorDialog from "../../component/ErrorDialog";
 
 export default function LoginScreen() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const dispatch = useDispatch();
-    const { loading, error } = useSelector((state) => state.auth);
+    const { loading, loginError, user } = useSelector((state) => state.auth);
+    const [errorDialogVisible, setErrorDialogVisible] = React.useState(false);
+    const [errorForgotDialogVisible, setErrorForgotDialogVisible] = React.useState(false);
+
+    const hideErrorDialog = () => {
+        setErrorDialogVisible(false);
+    };
+
+    const hideErrorForgotDialog = () => {
+        setErrorForgotDialogVisible(false);
+    };
 
     const handleLogin = () => {
         if (!email || !password) {
-            Alert.alert("Error", "Please enter email and password.");
+            setErrorDialogVisible(true);
             return;
         }
         dispatch(loginUser({ email, password }));
@@ -27,10 +38,38 @@ export default function LoginScreen() {
 
     const handleForgotPassword = () => {
         if (!email) {
-            Alert.alert("Please enter your email first.");
+            setErrorForgotDialogVisible(true);
             return;
         }
         dispatch(forgotPassword(email));
+    };
+
+    useEffect(() => {
+        if (loginError) {
+            setTimeout(() => {
+                dispatch(resetError());
+            }, 3000);
+        }
+    }, [loginError, dispatch]);
+
+    const getErrorMessage = (error) => {
+        const match = error.match(/\(auth\/([^)]+)\)/);
+        if (match) {
+            const errorCode = match[1];
+            switch (errorCode) {
+                case "invalid-credential":
+                case "user-not-found":
+                case "wrong-password":
+                    return "Email or Password is incorrect";
+                case "user-disabled":
+                    return "This user has been disabled";
+                case "too-many-requests":
+                    return "Please verify your email first";
+                default:
+                    return error;
+            }
+        }
+        return error;
     };
 
     if (loading) {
@@ -57,7 +96,11 @@ export default function LoginScreen() {
                 <Text style={styles.subtitle}>Enter your email and password</Text>
 
                 {/* Error Message */}
-                {error && <Text style={styles.error}>{error}</Text>}
+                {loginError && (
+                    <Text style={styles.error}>
+                        {getErrorMessage(loginError)}
+                    </Text>
+                )}
 
                 {/* Email Input */}
                 <CustomInput
@@ -77,6 +120,20 @@ export default function LoginScreen() {
                     isPassword
                 />
 
+                <ErrorDialog
+                    visible={errorDialogVisible}
+                    onDismiss={hideErrorDialog}
+                    title="Error"
+                    message="Please enter email and password."
+                />
+
+                <ErrorDialog
+                    visible={errorForgotDialogVisible}
+                    onDismiss={hideErrorForgotDialog}
+                    title="Error"
+                    message="Please enter your email first."
+                />
+
                 {/* Forgot Password */}
                 <TouchableOpacity onPress={handleForgotPassword}>
                     <Text style={styles.forgotPassword}>Forgot Password?</Text>
@@ -94,8 +151,6 @@ export default function LoginScreen() {
                         <Text style={styles.signupLink}> Signup</Text>
                     </TouchableOpacity>
                 </View>
-
-
             </ScrollView>
         </KeyboardAvoidingView>
     );

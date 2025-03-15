@@ -7,7 +7,7 @@ import {
     sendPasswordResetEmail,
     signOut,
 } from "firebase/auth";
-import { doc, setDoc, getDoc } from "firebase/firestore";
+import { doc, setDoc, getDoc, updateDoc } from "firebase/firestore";
 import { auth, db } from "../firebase"; // 🔹 Import Firebase
 
 // 🔹 Register User & Save to Firestore
@@ -29,6 +29,7 @@ export const signupUser = createAsyncThunk(
                 username,
                 favorites: [],
                 createdAt: new Date().toISOString(),
+                emailVerified: false,
             });
 
             await signOut(auth); // Logout after signup until verification
@@ -51,12 +52,14 @@ export const loginUser = createAsyncThunk(
                 await sendEmailVerification(user);
                 await signOut(auth);
                 return rejectWithValue("Email not verified. Check your inbox.");
+            } else {
+                // 🔹 Get user data from Firestore
+                const userRef = doc(db, "users", user.uid);
+                const userSnap = await getDoc(userRef);
+                return userSnap.exists() ? userSnap.data() : null;
             }
 
-            // 🔹 Get user data from Firestore
-            const userRef = doc(db, "users", user.uid);
-            const userSnap = await getDoc(userRef);
-            return userSnap.exists() ? userSnap.data() : null;
+
         } catch (error) {
             return rejectWithValue(error.message);
         }
@@ -87,9 +90,16 @@ const authSlice = createSlice({
         user: null,
         loading: false,
         error: null,
+        signupError: null,
+        loginError: null,
         message: null,
     },
-    reducers: {},
+    reducers: {
+        resetError: (state) => {
+            state.signupError = null;
+            state.loginError = null;
+        },
+    },
     extraReducers: (builder) => {
         builder
             // 🔹 Handle Signup
@@ -99,11 +109,11 @@ const authSlice = createSlice({
             .addCase(signupUser.fulfilled, (state, action) => {
                 state.loading = false;
                 state.user = action.payload;
-                state.error = null;
+                state.signupError = null;
             })
             .addCase(signupUser.rejected, (state, action) => {
                 state.loading = false;
-                state.error = action.payload;
+                state.signupError = action.payload;
             })
 
             // 🔹 Handle Login
@@ -113,11 +123,11 @@ const authSlice = createSlice({
             .addCase(loginUser.fulfilled, (state, action) => {
                 state.loading = false;
                 state.user = action.payload;
-                state.error = null;
+                state.loginError = null;
             })
             .addCase(loginUser.rejected, (state, action) => {
                 state.loading = false;
-                state.error = action.payload;
+                state.loginError = action.payload;
             })
 
             // 🔹 Handle Forgot Password
@@ -141,4 +151,5 @@ const authSlice = createSlice({
     },
 });
 
+export const { resetError } = authSlice.actions;
 export default authSlice.reducer;

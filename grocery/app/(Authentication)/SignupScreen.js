@@ -1,11 +1,13 @@
-import { StyleSheet, Text, View, TouchableOpacity, Alert, Image, KeyboardAvoidingView, Platform, ScrollView } from "react-native";
-import React, { useState } from "react";
+import { StyleSheet, View, Text, TouchableOpacity, Alert, Image, KeyboardAvoidingView, Platform, ScrollView } from "react-native";
+import React, { useState, useEffect } from "react";
 import { router } from "expo-router";
 import { useDispatch, useSelector } from "react-redux";
-import { signupUser } from "../../utils/authSlice";
+import { signupUser, resetError } from "../../utils/authSlice";
 import CustomInput from "../../component/CustomInput";
 import CustomButton from "../../component/CustomButton";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
+import SuccessDialog from "../../component/SuccessDialog";
+import ErrorDialog from "../../component/ErrorDialog";
 
 import customeFonts from "../../constent/customeFonts";
 import Colors from "../../constent/Colors";
@@ -13,26 +15,64 @@ import LoadingActivityIndicator from "../../component/LoadingActivityIndicator";
 
 export default function SignupScreen() {
     const dispatch = useDispatch();
-    const { loading, error } = useSelector((state) => state.auth);
+    const { loading, signupError } = useSelector((state) => state.auth);
     const [username, setUsername] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
 
+    const [dialogVisible, setDialogVisible] = React.useState(false);
+    const [errorDialogVisible, setErrorDialogVisible] = React.useState(false);
+
+    const hideDialog = () => {
+        setDialogVisible(false);
+        router.back();
+    };
+
+    const hideErrorDialog = () => {
+        setErrorDialogVisible(false);
+    };
+
     const handleSignupPress = () => {
         if (!username || !email || !password) {
-            Alert.alert("Error", "All fields are required!");
+            setErrorDialogVisible(true);
             return;
         }
 
         dispatch(signupUser({ username, email, password }))
             .unwrap()
             .then(() => {
-                Alert.alert("Success", "Account created! Verify your email.");
-                router.back();
+                setDialogVisible(true)
             })
             .catch((err) => {
-                Alert.alert("Signup Failed", err);
+                console.log(err);
             });
+
+    };
+
+    useEffect(() => {
+        if (signupError) {
+            setTimeout(() => {
+                dispatch(resetError());
+            }, 3000);
+        }
+    }, [signupError, dispatch]);
+
+    const getErrorMessage = (error) => {
+        const match = error.match(/\(auth\/([^)]+)\)/);
+        if (match) {
+            const errorCode = match[1];
+            switch (errorCode) {
+                case "email-already-in-use":
+                    return "Account already exists!";
+                case "invalid-email":
+                    return "Invalid email address!";
+                case "weak-password":
+                    return "Password is too weak!";
+                default:
+                    return error;
+            }
+        }
+        return error;
     };
 
     if (loading) {
@@ -59,7 +99,11 @@ export default function SignupScreen() {
 
 
                 {/* Error Message */}
-                {error && <Text style={styles.errorText}>{error}</Text>}
+                {signupError && (
+                    <Text style={styles.errorText}>
+                        {getErrorMessage(signupError)}
+                    </Text>
+                )}
 
                 {/* Input Fields */}
                 <CustomInput
@@ -84,6 +128,20 @@ export default function SignupScreen() {
                     onChangeText={setPassword}
                     secureTextEntry
                     isPassword
+                />
+
+                <SuccessDialog
+                    visible={dialogVisible}
+                    onDismiss={hideDialog}
+                    title="Congratulations"
+                    message="Account created! Verify your email."
+                />
+
+                <ErrorDialog
+                    visible={errorDialogVisible}
+                    onDismiss={hideErrorDialog}
+                    title="Error"
+                    message="All fields are required!"
                 />
 
                 {/* Terms Text */}
