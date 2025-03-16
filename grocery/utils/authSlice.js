@@ -9,6 +9,8 @@ import {
 } from "firebase/auth";
 import { doc, setDoc, getDoc, updateDoc } from "firebase/firestore";
 import { auth, db } from "../firebase"; // 🔹 Import Firebase
+import { updateUserProfile, changeUserPassword } from './authService';
+
 
 // 🔹 Register User & Save to Firestore
 export const signupUser = createAsyncThunk(
@@ -84,6 +86,29 @@ export const logoutUser = createAsyncThunk("auth/logout", async () => {
     await signOut(auth);
 });
 
+export const updateProfileThunk = createAsyncThunk(
+    'auth/updateProfile',
+    async (name, { rejectWithValue }) => {
+        try {
+            await updateUserProfile(name);
+            return { username: name };
+        } catch (error) {
+            return rejectWithValue(error.message);
+        }
+    }
+);
+
+export const changePasswordThunk = createAsyncThunk(
+    'auth/changePassword',
+    async ({ currentPassword, newPassword }, { rejectWithValue }) => {
+        try {
+            await changeUserPassword(currentPassword, newPassword);
+        } catch (error) {
+            return rejectWithValue(error.message);
+        }
+    }
+);
+
 const authSlice = createSlice({
     name: "auth",
     initialState: {
@@ -98,6 +123,7 @@ const authSlice = createSlice({
         resetError: (state) => {
             state.signupError = null;
             state.loginError = null;
+            state.error = null;
         },
     },
     extraReducers: (builder) => {
@@ -147,6 +173,31 @@ const authSlice = createSlice({
             // 🔹 Handle Logout
             .addCase(logoutUser.fulfilled, (state) => {
                 state.user = null;
+            })
+
+            // 🔹 Handle Update Profile
+            .addCase(updateProfileThunk.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(updateProfileThunk.fulfilled, (state, action) => {
+                state.loading = false;
+                state.user = { ...state.user, ...action.payload };
+            })
+            .addCase(updateProfileThunk.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+
+            // 🔹 Handle Change Password
+            .addCase(changePasswordThunk.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(changePasswordThunk.fulfilled, (state) => {
+                state.loading = false;
+            })
+            .addCase(changePasswordThunk.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
             });
     },
 });

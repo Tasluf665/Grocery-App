@@ -11,6 +11,9 @@ export default () => {
                 }}
             />
             <Stack.Screen name="IncompleteScreen" />
+            <Stack.Screen name="HelpScreen" />
+            <Stack.Screen name="AboutScreen" />
+            <Stack.Screen name="MyDetailsScreen" />
         </Stack>
     );
 };

@@ -77,13 +77,13 @@ export default function AccountScreen() {
             {/* Menu Options */}
             <View style={styles.menuSection}>
                 <MenuItem onPress={() => router.push("/OrderScreen")} icon={<Ionicons name="cart-outline" size={24} color="black" />} title="Orders" />
-                <MenuItem onPress={() => router.push("/IncompleteScreen")} icon={<MaterialIcons name="person-outline" size={24} color="black" />} title="My Details" />
+                <MenuItem onPress={() => router.push("/MyDetailsScreen")} icon={<MaterialIcons name="person-outline" size={24} color="black" />} title="My Details" />
                 <MenuItem onPress={() => router.push("/IncompleteScreen")} icon={<Ionicons name="location-outline" size={24} color="black" />} title="Delivery Address" />
                 <MenuItem onPress={() => router.push("/IncompleteScreen")} icon={<Feather name="credit-card" size={24} color="black" />} title="Payment Methods" />
                 <MenuItem onPress={() => router.push("/IncompleteScreen")} icon={<MaterialIcons name="local-offer" size={24} color="black" />} title="Promo Code" />
                 <MenuItem onPress={() => router.push("/IncompleteScreen")} icon={<Ionicons name="notifications-outline" size={24} color="black" />} title="Notifications" />
-                <MenuItem onPress={() => router.push("/IncompleteScreen")} icon={<Ionicons name="help-circle-outline" size={24} color="black" />} title="Help" />
-                <MenuItem onPress={() => router.push("/IncompleteScreen")} icon={<Ionicons name="information-circle-outline" size={24} color="black" />} title="About" />
+                <MenuItem onPress={() => router.push("/HelpScreen")} icon={<Ionicons name="help-circle-outline" size={24} color="black" />} title="Help" />
+                <MenuItem onPress={() => router.push("/AboutScreen")} icon={<Ionicons name="information-circle-outline" size={24} color="black" />} title="About" />
             </View>
 
             <ErrorDialog

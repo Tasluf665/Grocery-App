@@ -4,7 +4,7 @@ import { AntDesign } from "@expo/vector-icons";
 import customeFonts from "../constent/customeFonts";
 import Colors from "../constent/Colors";
 
-export default function CustomInput({ label, value, onChangeText, placeholder, secureTextEntry, isPassword }) {
+export default function CustomInput({ label, value, onChangeText, placeholder, secureTextEntry, isPassword, editable = true }) {
     const [isSecure, setIsSecure] = useState(secureTextEntry);
 
     return (
@@ -19,6 +19,7 @@ export default function CustomInput({ label, value, onChangeText, placeholder, s
                     secureTextEntry={isSecure}
                     autoCapitalize="none"
                     keyboardType={label === "Email" ? "email-address" : "default"}
+                    editable={editable}
                 />
                 {isPassword && (
                     <TouchableOpacity onPress={() => setIsSecure(!isSecure)}>
