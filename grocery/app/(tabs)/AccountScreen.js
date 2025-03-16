@@ -6,9 +6,7 @@ import {
     StyleSheet,
     ScrollView,
 } from "react-native";
-import { signOut } from "firebase/auth";
-import { auth, db } from "../../firebase"; // Firebase imports
-import { doc, getDoc } from "firebase/firestore";
+import { useDispatch, useSelector } from "react-redux";
 import { router } from "expo-router";
 import { MaterialIcons, Ionicons, Feather } from "@expo/vector-icons";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
@@ -17,47 +15,27 @@ import LoadingActivityIndicator from "../../component/LoadingActivityIndicator";
 import customeFonts from "../../constent/customeFonts";
 import Colors from "../../constent/Colors";
 import ErrorDialog from "../../component/ErrorDialog";
-
+import { logoutUser, resetError } from "../../utils/authSlice";
 
 export default function AccountScreen() {
-    const [userInfo, setUserInfo] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [errorDialogVisible, setErrorDialogVisible] = React.useState(false);
+    const dispatch = useDispatch();
+    const { user, loading, error } = useSelector((state) => state.auth);
+    const [errorDialogVisible, setErrorDialogVisible] = useState(false);
 
     const hideErrorDialog = () => {
         setErrorDialogVisible(false);
+        dispatch(resetError());
     };
 
     useEffect(() => {
-        const fetchUserInfo = async () => {
-            try {
-                const user = auth.currentUser;
-                if (user) {
-                    const userRef = doc(db, "users", user.uid);
-                    const userSnap = await getDoc(userRef);
-                    if (userSnap.exists()) {
-                        setUserInfo(userSnap.data());
-                    } else {
-                        console.error("No user document found.");
-                    }
-                }
-            } catch (error) {
-                console.error("Error fetching user info:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchUserInfo();
-    }, []);
-
-    if (loading) {
-        return <LoadingActivityIndicator />;
-    }
+        if (error) {
+            setErrorDialogVisible(true);
+        }
+    }, [error]);
 
     const handleLogout = async () => {
         try {
-            await signOut(auth);
+            await dispatch(logoutUser()).unwrap();
             router.replace("LoginScreen");
         } catch (error) {
             console.error(error);
@@ -65,13 +43,16 @@ export default function AccountScreen() {
         }
     };
 
+    if (loading) {
+        return <LoadingActivityIndicator />;
+    }
+
     return (
         <ScrollView style={styles.container}>
             {/* Profile Section */}
             <View style={styles.profileSection}>
-
-                <Text style={styles.profileName}>{userInfo?.username || "Guest"}</Text>
-                <Text style={styles.profileEmail}>{userInfo?.email || "No email available"}</Text>
+                <Text style={styles.profileName}>{user?.username || "Guest"}</Text>
+                <Text style={styles.profileEmail}>{user?.email || "No email available"}</Text>
             </View>
 
             {/* Menu Options */}
