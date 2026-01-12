@@ -21,7 +21,7 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.tasluf.groceryapp"
+      "package": "com.tasluf.groceryappnew"
     },
     "web": {
       "favicon": "./assets/favicon.png"
