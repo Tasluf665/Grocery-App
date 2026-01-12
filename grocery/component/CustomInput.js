@@ -23,7 +23,7 @@ export default function CustomInput({ label, value, onChangeText, placeholder, s
                 />
                 {isPassword && (
                     <TouchableOpacity onPress={() => setIsSecure(!isSecure)}>
-                        <AntDesign name={isSecure ? "eyeo" : "eye"} size={20} color="gray" />
+                        <AntDesign name={isSecure ? "eye-invisible" : "eye"} size={20} color="gray" />
                     </TouchableOpacity>
                 )}
             </View>

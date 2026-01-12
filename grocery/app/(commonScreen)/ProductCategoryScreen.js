@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { View, Text, FlatList, StyleSheet, TouchableOpacity } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useDispatch, useSelector } from "react-redux";
-import { AntDesign } from "@expo/vector-icons"; // For back button icon
+import Feather from '@expo/vector-icons/Feather'; // For back button icon
 import { Snackbar } from 'react-native-paper';
 
 import { getProductsByCategoryOrSection } from "../../utils/productsSlice";
@@ -37,7 +37,7 @@ export default function ProductCategoryScreen() {
             {/* Header with Back Button and Title */}
             <View style={styles.header}>
                 <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-                    <AntDesign name="arrowleft" size={24} color="black" />
+                    <Feather name="arrow-left" size={24} color="black" />
                 </TouchableOpacity>
                 <Text style={styles.headerTitle}>{title}</Text>
                 <View style={{ width: 24 }} ></View>
@@ -58,7 +58,7 @@ export default function ProductCategoryScreen() {
                 onDismiss={onDismissSnackBar}
                 style={styles.snackbar}
             >
-                Product added to cart!
+                <Text style={{ color: "white" }}>Product added to cart!</Text>
             </Snackbar>
         </View>
     );

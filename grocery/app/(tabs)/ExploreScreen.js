@@ -113,7 +113,7 @@ export default function ExploreScreen() {
                 onDismiss={onDismissSnackBar}
                 style={styles.snackbar}
             >
-                Product added to cart!
+                <Text style={{ color: "white" }}>Product added to cart!</Text>
             </Snackbar>
 
         </View>

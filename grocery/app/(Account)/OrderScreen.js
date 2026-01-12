@@ -4,6 +4,7 @@ import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-nat
 import Colors from '../../constent/Colors';
 import customeFonts from '../../constent/customeFonts';
 import { AntDesign } from '@expo/vector-icons';
+import Feather from '@expo/vector-icons/Feather';
 
 import { useSelector, useDispatch } from "react-redux";
 import { fetchPayments } from '../../utils/paymentsSlice';
@@ -38,7 +39,7 @@ const OrderScreen = () => {
         <View style={styles.container}>
             <View style={styles.header}>
                 <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-                    <AntDesign name="arrowleft" size={24} color="black" />
+                    <Feather name="arrow-left" size={24} color="black" />
                 </TouchableOpacity>
                 <Text style={styles.headerTitle}>My Orders</Text>
                 <View style={{ width: 24 }} ></View>
@@ -88,7 +89,7 @@ const OrderScreen = () => {
 
                         {/* Order Status */}
                         <View style={styles.statusContainer}>
-                            <AntDesign name="checkcircle" size={16} color={Colors.Primary} />
+                            <AntDesign name="check-circle" size={16} color={Colors.Primary} />
                             <Text style={styles.statusText}>Completed</Text>
                         </View>
                     </View>

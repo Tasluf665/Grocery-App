@@ -1,12 +1,12 @@
 import React from "react";
 import { View, TextInput, StyleSheet } from "react-native";
-import { AntDesign } from "@expo/vector-icons";
+import FontAwesome from '@expo/vector-icons/FontAwesome';
 import customeFonts from "../constent/customeFonts";
 
 const SearchBar = ({ placeholder, value, onChangeText }) => {
     return (
         <View style={styles.searchContainer}>
-            <AntDesign name="search1" size={20} color="#7C7C7C" style={styles.searchIcon} />
+            <FontAwesome name="search" size={20} color="#7C7C7C" style={styles.searchIcon} />
             <TextInput
                 placeholder={placeholder}
                 placeholderTextColor="#7C7C7C"

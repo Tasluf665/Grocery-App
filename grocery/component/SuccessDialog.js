@@ -37,11 +37,13 @@ const styles = StyleSheet.create({
     dialogTitle: {
         textAlign: 'center',
         fontSize: 20,
-        fontWeight: 'bold'
+        fontWeight: 'bold',
+        color: Colors.DarkGray
     },
     dialogText: {
         textAlign: 'center',
         fontSize: 16,
+        color: Colors.DarkGray
     },
     dialogButton: {
         backgroundColor: Colors.Primary,

@@ -3,6 +3,7 @@ import { View, Text, Image, StyleSheet, TouchableOpacity, ScrollView } from "rea
 import { useLocalSearchParams } from "expo-router";
 import { fetchProductDetails } from "../../utils/fetchProducts";
 import { AntDesign } from "@expo/vector-icons"; // Favorite icon
+import Entypo from '@expo/vector-icons/Entypo';
 import { useDispatch, useSelector } from "react-redux";
 import { addFavorite, removeFavorite } from "../../utils/favoritesSlice";
 import { addToCart, fetchCart } from "../../utils/cartSlice";
@@ -76,7 +77,7 @@ export default function ProductDetailsScreen() {
                 <View style={styles.headerRow}>
                     <Text style={styles.productName}>{product.name}</Text>
                     <TouchableOpacity onPress={toggleFavorite}>
-                        <AntDesign name={isFavorite ? "heart" : "hearto"} size={22} color={isFavorite ? "red" : "black"} />
+                        <Entypo name={isFavorite ? "heart" : "heart-outlined"} size={24} color={isFavorite ? "red" : "black"} />
                     </TouchableOpacity>
                 </View>
                 <Text style={styles.productSize}>{product.priceDescription}</Text>
@@ -141,7 +142,7 @@ export default function ProductDetailsScreen() {
                     onDismiss={onDismissSnackBar}
                     style={styles.snackbar}
                 >
-                    Product added to cart!
+                    <Text style={{ color: "white" }}>Product added to cart!</Text>
                 </Snackbar>
             </View>
         </SafeAreaView>

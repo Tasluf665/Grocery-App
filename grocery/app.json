@@ -46,6 +46,26 @@
             "./assets/fonts/Lato/Lato-ThinItalic.ttf"
           ]
         }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "compileSdkVersion": 35,
+            "targetSdkVersion": 35,
+            "buildToolsVersion": "35.0.0"
+          },
+          "ios": {
+            "useFrameworks": "static"
+          }
+        }
+      ],
+      [
+        "@stripe/stripe-react-native",
+        {
+          "merchantIdentifier": "merchant.com.tasluf.groceryappnew",
+          "enableGooglePay": true
+        }
       ]
     ],
     "extra": {
