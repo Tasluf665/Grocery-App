@@ -32,7 +32,7 @@ Welcome to the documentation for **Nectar**, a grocery shopping mobile applicati
    - Handles product data, orders, and user management.
 
 2. **Database**:
-   - Uses MongoDB for robust data storage.
+   - Uses Firebase for robust data storage.
 
 ## Getting Started
 
